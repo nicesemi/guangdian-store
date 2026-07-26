@@ -63,28 +63,13 @@
           <span class="nav-icon">📦</span> 我的Skill
         </a>
 
-        <!-- 教育 -->
-        <div class="sidebar-section">deependu.school</div>
-        <a href="/edu" class="sidebar-link {% if request.url.path == '/edu' %}active{% endif %}">
-          <span class="nav-icon">🎓</span> 教育首页
-        </a>
-        <a href="/edu/tutor" class="sidebar-link {% if '/edu/tutor' in request.url.path %}active{% endif %}">
-          <span class="nav-icon">🤖</span> AI家教
-        </a>
-        <a href="/edu/courses" class="sidebar-link {% if '/edu/courses' in request.url.path %}active{% endif %}">
-          <span class="nav-icon">📚</span> 课程广场
-        </a>
-        <a href="/edu/practice" class="sidebar-link {% if '/edu/practice' in request.url.path %}active{% endif %}">
-          <span class="nav-icon">✏️</span> 题库练习
-        </a>
-        <a href="/edu/report" class="sidebar-link {% if '/edu/report' in request.url.path %}active{% endif %}">
-          <span class="nav-icon">📈</span> 学习报告
-        </a>
-
         <!-- 电视端 -->
         <div class="sidebar-section">家庭电视端</div>
-        <a href="/tv" class="sidebar-link {% if '/tv' in request.url.path %}active{% endif %}">
+        <a href="/tv" class="sidebar-link {% if request.url.path == '/tv' %}active{% endif %}">
           <span class="nav-icon">📺</span> 电视大屏
+        </a>
+        <a href="/tv-simulator" class="sidebar-link {% if '/tv-simulator' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">🖥️</span> TV模拟器
         </a>
       </nav>
     </aside>

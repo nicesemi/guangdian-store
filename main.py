@@ -62,6 +62,12 @@ async def tv_page(request: Request):
     user = get_current_user(request)
     return app.state.templates.TemplateResponse("tv/index.html", {"request": request, "user": user})
 
+# TV 模拟器
+@app.get("/tv-simulator", response_class=HTMLResponse)
+@app.get("/tv-simulator/", response_class=HTMLResponse)
+async def tv_simulator_page(request: Request):
+    return app.state.templates.TemplateResponse("tv-simulator.html", {"request": request})
+
 
 if __name__ == "__main__":
     import uvicorn

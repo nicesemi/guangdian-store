@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>广电算力TV</title>
+<style>
+  :root {
+    --bg: #0b0e1a;
+    --card-bg: linear-gradient(135deg, #1a1c38 0%, #1e2247 100%);
+    --primary: #3b82f6;
+    --green: #10b981;
+    --orange: #f59e0b;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --dim: #64748b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    width: 100vw; height: 100vh;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    user-select: none;
+  }
+
+  /* Top Bar */
+  .topbar {
+    height: 72px;
+    background: rgba(15,23,42,.95);
+    border-bottom: 1px solid rgba(59,130,246,.15);
+    display: flex;
+    align-items: center;
+    padding: 0 36px;
+    justify-content: space-between;
+    backdrop-filter: blur(12px);
+    z-index: 10;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .topbar-logo { font-size: 22px; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
+  .topbar-logo span { color: var(--text); font-weight: 400; margin-left: 2px; }
+  .topbar-center { text-align: center; }
+  .topbar-time { font-size: 30px; font-weight: 300; letter-spacing: 2px; font-variant-numeric: tabular-nums; }
+  .topbar-date { font-size: 13px; color: var(--dim); margin-top: -2px; }
+  .topbar-right { display: flex; align-items: center; gap: 18px; }
+  .weather-box { display: flex; align-items: center; gap: 8px; }
+  .weather-temp { font-size: 22px; font-weight: 600; }
+  .weather-desc { font-size: 13px; color: var(--dim); }
+  .status-dot { width: 9px; height: 9px; border-radius: 50%; }
+  .status-online { background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+  /* Main Grid */
+  .content { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+  .main-grid {
+    flex: 1; min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 18px;
+    padding: 20px 36px 16px;
+  }
+
+  /* Card */
+  .card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,.06);
+    display: flex;
+    flex-direction: column;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all .25s;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+  }
+  .card:hover, .card.focused {
+    border-color: var(--primary);
+    box-shadow: 0 0 28px rgba(59,130,246,.18);
+    transform: translateY(-2px);
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .card-icon { font-size: 28px; }
+  .card-title { font-size: 15px; font-weight: 600; }
+  .card-body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+  /* Stats inside cards */
+  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
+  .stat-label { font-size: 12px; color: var(--dim); }
+  .stat-value { font-size: 15px; font-weight: 600; }
+  .stat-value.green { color: var(--green); }
+  .stat-value.orange { color: var(--orange); }
+  .stat-value.blue { color: var(--primary); }
+
+  .mini-bar { height: 5px; background: rgba(255,255,255,.08); border-radius: 3px; margin-top: 4px; overflow: hidden; }
+  .mini-bar-fill { height: 100%; border-radius: 3px; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(59,130,246,.15);
+    color: #93c5fd;
+  }
+
+  .model-tag {
+    display: inline-block;
+    padding: 3px 8px;
+    margin: 2px;
+    border-radius: 5px;
+    font-size: 11px;
+    background: rgba(59,130,246,.12);
+    color: #93c5fd;
+    white-space: nowrap;
+  }
+
+  /* Bottom Bar */
+  .bottombar {
+    height: 52px;
+    background: rgba(15,23,42,.9);
+    border-top: 1px solid rgba(255,255,255,.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 36px;
+    font-size: 12px;
+    color: var(--dim);
+  }
+  .nav-item { display: flex; align-items: center; gap: 6px; }
+  .nav-key {
+    width: 26px; height: 26px;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.75);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; backdrop-filter: blur(6px);
+  }
+  .modal {
+    background: #1e2247;
+    border-radius: 18px;
+    padding: 28px 32px;
+    width: 700px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid rgba(59,130,246,.2);
+  }
+  .modal h3 { font-size: 20px; margin-bottom: 16px; color: var(--primary); }
+  .modal-close {
+    float: right; background: none; border: none; color: var(--dim);
+    font-size: 22px; cursor: pointer;
+  }
+  .skill-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .skill-name { font-weight: 500; }
+  .skill-cost { font-size: 12px; color: var(--dim); }
+
+  .hidden { display: none !important; }
+
+  /* Tops meter */
+  .tops-meter {
+    height: 12px; background: rgba(255,255,255,.06);
+    border-radius: 6px; margin: 8px 0; overflow: hidden;
+    display: flex;
+  }
+  .tops-local { background: var(--green); transition: width .5s; }
+  .tops-dist { background: var(--orange); transition: width .5s; }
+
+  .refresh-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+    animation: blink 2s infinite;
+  }
+  @keyframes blink { 50% { opacity: .3; } }
+
+  /* Remote cursor */
+  .remote-cursor {
+    position: absolute;
+    border: 3px solid var(--primary);
+    border-radius: 20px;
+    box-shadow: 0 0 24px rgba(59,130,246,.5), inset 0 0 12px rgba(59,130,246,.08);
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0;
+    transition: all .25s cubic-bezier(.4,0,.2,1);
+  }
+  .remote-cursor.active {
+    opacity: 1;
+  }
+  .remote-cursor-idle {
+    border-color: rgba(59,130,246,.35);
+    box-shadow: 0 0 12px rgba(59,130,246,.25), inset 0 0 6px rgba(59,130,246,.04);
+  }
+  .remote-hint {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(59,130,246,.15);
+    border: 1px solid rgba(59,130,246,.25);
+    color: #93c5fd;
+    padding: 3px 12px;
+    border-radius: 10px;
+    font-size: 11px;
+    pointer-events: none;
+    z-index: 51;
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  .remote-hint.show { opacity: 1; }
+
+  /* App iframe */
+  .app-frame {
+    flex: 1; min-height: 0;
+    display: none; flex-direction: column;
+    background: #0b0e1a;
+  }
+  .app-frame.open { display: flex; }
+  .app-frame-bar {
+    height: 48px; background: rgba(15,23,42,.95);
+    border-bottom: 1px solid rgba(59,130,246,.2);
+    display: flex; align-items: center; padding: 0 20px;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .app-frame-title { font-size: 15px; font-weight: 600; color: var(--primary); }
+  .app-frame-close {
+    background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3);
+    color: #fca5a5; padding: 4px 16px; border-radius: 8px;
+    font-size: 13px; cursor: pointer; transition: all .2s;
+  }
+  .app-frame-close:hover { background: rgba(239,68,68,.25); }
+  .app-frame iframe { flex: 1; border: none; width: 100%; }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">📡 广电<span>算力TV</span></div>
+    <div class="refresh-dot" title="实时连接"></div>
+  </div>
+  <div class="topbar-center">
+    <div class="topbar-time" id="tv-time">--:--:--</div>
+    <div class="topbar-date" id="tv-date">----年--月--日 周-</div>
+  </div>
+  <div class="topbar-right">
+    <div class="weather-box" id="weather-box">
+      <span style="font-size:22px;">🌤️</span>
+      <span class="weather-temp" id="weather-temp">--°C</span>
+      <span class="weather-desc" id="weather-desc">--</span>
+      <span style="font-size:10px;color:var(--dim);">长沙</span>
+    </div>
+    <span class="status-dot status-online"></span>
+    <span style="font-size:12px;color:var(--green);">算力在线</span>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="content">
+<div class="main-grid">
+
+  <!-- 1. 本机算力 -->
+  <a class="card" id="card-system" onclick="openSystemModal()">
+    <div class="card-header">
+      <div class="card-icon">💻</div>
+      <div class="card-title">本机算力资源</div>
+    </div>
+    <div class="card-body" id="system-resources">
+      <div class="stat-row"><span class="stat-label">CPU</span><span class="stat-value" id="sys-cpu">--</span></div>
+      <div class="stat-row"><span class="stat-label">GPU</span><span class="stat-value" id="sys-gpu">--</span></div>
+      <div class="stat-row"><span class="stat-label">内存</span><span class="stat-value" id="sys-mem">--</span></div>
+      <div class="stat-row"><span class="stat-label">本地算力</span><span class="stat-value green" id="sys-tops">-- TOPS</span></div>
+    </div>
+  </a>
+
+  <!-- 2. 本地模型 -->
+  <a class="card" id="card-models" onclick="openModelsModal()">
+    <div class="card-header">
+      <div class="card-icon">🧠</div>
+      <div class="card-title">已安装模型</div>
+    </div>
+    <div class="card-body">
+      <div id="model-list" style="display:flex;flex-wrap:wrap;gap:3px;">加载中...</div>
+    </div>
+  </a>
+
+  <!-- 3. 广电商城 -->
+  <a class="card" id="card-mall" onclick="openMallModal()">
+    <div class="card-header">
+      <div class="card-icon">🛒</div>
+      <div class="card-title">广电商城</div>
+    </div>
+    <div class="card-body">
+      <div id="mall-preview" style="font-size:13px;color:var(--dim);">
+        连接主平台获取Skill列表...
+      </div>
+    </div>
+  </a>
+
+  <!-- 4. 算力仪表盘 -->
+  <a class="card" id="card-billing" onclick="openBillingModal()">
+    <div class="card-header">
+      <div class="card-icon">📊</div>
+      <div class="card-title">算力调度 & 计费</div>
+    </div>
+    <div class="card-body">
+      <div class="stat-row"><span class="stat-label">本地算力</span><span class="stat-value green" id="bill-local">-- TOPS</span></div>
+      <div class="tops-meter"><div class="tops-local" id="tops-local-bar" style="width:50%"></div><div class="tops-dist" id="tops-dist-bar" style="width:50%"></div></div>
+      <div class="stat-row"><span class="stat-label">今日Token消耗</span><span class="stat-value orange" id="bill-tokens">-- CPT</span></div>
+      <div class="stat-row"><span class="stat-label">费用</span><span class="stat-value" id="bill-cost">¥0.00</span></div>
+    </div>
+  </a>
+
+  <!-- 5. 已安装应用 (动态) -->
+  <a class="card hidden" id="card-installed-app1" href="#" target="_blank">
+    <div class="card-header">
+      <div class="card-icon" id="app1-icon">📦</div>
+      <div class="card-title" id="app1-name">--</div>
+    </div>
+    <div class="card-body">
+      <div style="font-size:13px;color:var(--dim);line-height:1.8;" id="app1-desc">--</div>
+      <div style="margin-top:8px;" id="app1-badges"></div>
+    </div>
+  </a>
+
+  <!-- 6. 已安装应用2 (动态) -->
+  <a class="card hidden" id="card-installed-app2" href="#" target="_blank">
+    <div class="card-header">
+      <div class="card-icon" id="app2-icon">📦</div>
+      <div class="card-title" id="app2-name">--</div>
+    </div>
+    <div class="card-body">
+      <div style="font-size:13px;color:var(--dim);line-height:1.8;" id="app2-desc">--</div>
+      <div style="margin-top:8px;" id="app2-badges"></div>
+    </div>
+  </a>
+
+  <!-- 7. 天气详情 -->
+  <a class="card" id="card-weather" onclick="openWeatherModal()">
+    <div class="card-header">
+      <div class="card-icon">🌤️</div>
+      <div class="card-title">天气详情</div>
+    </div>
+    <div class="card-body" id="weather-detail">
+      <div style="text-align:center;font-size:40px;font-weight:200;" id="weather-big-temp">--°</div>
+      <div style="text-align:center;color:var(--dim);margin-top:4px;" id="weather-big-desc">--</div>
+    </div>
+  </a>
+
+  <!-- 8. 系统状态 -->
+  <a class="card" id="card-status" onclick="openStatusModal()">
+    <div class="card-header">
+      <div class="card-icon">⚙️</div>
+      <div class="card-title">连接状态</div>
+    </div>
+    <div class="card-body">
+      <div class="stat-row"><span class="stat-label">广电平台</span><span class="stat-value green" id="status-platform">--</span></div>
+      <div class="stat-row"><span class="stat-label">集群节点</span><span class="stat-value" id="status-nodes">--</span></div>
+      <div class="stat-row"><span class="stat-label">本机IP</span><span class="stat-value" id="status-ip" style="font-size:12px;">--</span></div>
+    </div>
+  </a>
+</div>
+
+<!-- Bottom Bar -->
+<div class="bottombar">
+  <div class="nav-item"><div class="nav-key">←→</div>导航</div>
+  <div class="nav-item"><div class="nav-key">↑↓</div>选择</div>
+  <div class="nav-item"><div class="nav-key">OK</div>确认</div>
+  <div class="nav-item"><div class="nav-key">🎤</div>语音搜索</div>
+  <div class="nav-item"><div class="nav-key">🏠</div>首页</div>
+  <div class="nav-item"><div class="nav-key">🔙</div>返回</div>
+  <div class="nav-item"><div class="nav-key">⚡</div><span id="remote-status">遥控器未连接</span></div>
+  <div class="nav-item"><span style="color:var(--green);">●</span>广电算力TV · 5000 TOPS</div>
+</div>
+
+<!-- Modals -->
+<!-- Remote cursor -->
+<div class="remote-cursor" id="remote-cursor"></div>
+<div class="remote-hint" id="remote-hint"></div>
+
+<!-- App iframe -->
+<div class="app-frame" id="app-frame">
+  <div class="app-frame-bar">
+    <span class="app-frame-title" id="app-frame-title">应用</span>
+    <button class="app-frame-close" onclick="closeAppFrame()">返回TV</button>
+  </div>
+  <iframe id="app-iframe" src="" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+</div>
+</div>
+
+<div class="modal-overlay hidden" id="modal-system"><div class="modal"><button class="modal-close" onclick="closeModal('modal-system')">&times;</button><h3>本机算力详情</h3><div id="modal-system-content"></div></div></div>
+<div class="modal-overlay hidden" id="modal-models"><div class="modal"><button class="modal-close" onclick="closeModal('modal-models')">&times;</button><h3>已安装模型列表</h3><div id="modal-models-content"></div></div></div>
+<div class="modal-overlay hidden" id="modal-mall"><div class="modal"><button class="modal-close" onclick="closeModal('modal-mall')">&times;</button><h3>广电商城 · Skill市场</h3><div id="modal-mall-content"></div></div></div>
+<div class="modal-overlay hidden" id="modal-billing"><div class="modal"><button class="modal-close" onclick="closeModal('modal-billing')">&times;</button><h3>算力调度 & 计费明细</h3><div id="modal-billing-content"></div></div></div>
+<div class="modal-overlay hidden" id="modal-weather"><div class="modal"><button class="modal-close" onclick="closeModal('modal-weather')">&times;</button><h3>天气详情 · 长沙</h3><div id="modal-weather-content"></div></div></div>
+<div class="modal-overlay hidden" id="modal-status"><div class="modal"><button class="modal-close" onclick="closeModal('modal-status')">&times;</button><h3>连接状态</h3><div id="modal-status-content"></div></div></div>
+
+<script>
+// ─── 时钟 ──────────────────────────────────────────────────────────
+function updateClock() {
+  fetch('/api/time').then(r=>r.json()).then(d=>{
+    document.getElementById('tv-time').textContent = d.time;
+    document.getElementById('tv-date').textContent = d.date + ' ' + d.weekday;
+  });
+}
+setInterval(updateClock, 1000); updateClock();
+
+// ─── 天气 ──────────────────────────────────────────────────────────
+function updateWeather() {
+  fetch('/api/weather').then(r=>r.json()).then(d=>{
+    document.getElementById('weather-temp').textContent = d.temp + '°C';
+    document.getElementById('weather-desc').textContent = d.desc;
+    document.getElementById('weather-big-temp').textContent = d.temp + '°';
+    document.getElementById('weather-big-desc').textContent = d.desc;
+    document.getElementById('modal-weather-content').innerHTML = `
+      <div style="text-align:center;font-size:64px;font-weight:200;color:var(--primary);margin:16px 0;">${d.temp}°C</div>
+      <div style="text-align:center;font-size:18px;margin-bottom:20px;">${d.desc} · ${d.city}</div>
+      <div class="stat-row"><span class="stat-label">湿度</span><span class="stat-value">${d.humidity}%</span></div>
+      <div class="stat-row"><span class="stat-label">风速</span><span class="stat-value">${d.wind} m/s</span></div>
+      <div class="stat-row"><span class="stat-label">空气质量</span><span class="stat-value green">${d.aqi}</span></div>
+    `;
+  });
+}
+updateWeather(); setInterval(updateWeather, 600000);
+
+// ─── 系统资源 ──────────────────────────────────────────────────────
+function updateSystem() {
+  fetch('/api/system').then(r=>r.json()).then(d=>{
+    document.getElementById('sys-cpu').textContent = d.cpu.brand ? d.cpu.brand.split('@')[0].trim().slice(-30) : d.cpu.cores+'核';
+    document.getElementById('sys-gpu').textContent = d.gpu[0]?.model?.slice(-25) || '集成GPU';
+    document.getElementById('sys-mem').textContent = d.memory.used_gb + '/' + d.memory.total_gb + ' GB';
+    document.getElementById('sys-tops').textContent = d.local_tops + ' TOPS';
+
+    // 模型
+    let ml = '<div style="flex-wrap:wrap;display:flex;gap:3px;">';
+    if (d.models.length === 0) ml += '<span class="model-tag">暂无检测到本地模型</span>';
+    else d.models.slice(0,6).forEach(m=> ml += `<span class="model-tag">${m.name.slice(0,18)}</span>`);
+    if (d.models.length > 6) ml += `<span class="model-tag">+${d.models.length-6}个</span>`;
+    ml += '</div>';
+    document.getElementById('model-list').innerHTML = ml;
+
+    // 模态框
+    let cpu_name = d.cpu.brand || (d.cpu.cores + ' 核');
+    let gpu_list = d.gpu.map(g => `<div><strong>${g.model}</strong> VRAM: ${g.vram} ${g.metal ? 'Metal: '+g.metal : ''}</div>`).join('');
+    document.getElementById('modal-system-content').innerHTML = `
+      <div class="stat-row"><span class="stat-label">操作系统</span><span class="stat-value">${d.os}</span></div>
+      <div class="stat-row"><span class="stat-label">CPU</span><span class="stat-value">${cpu_name}</span></div>
+      <div class="stat-row"><span class="stat-label">CPU使用率</span><span class="stat-value">${d.cpu.usage}%</span></div>
+      <div class="stat-row"><span class="stat-label">GPU</span></div>
+      <div style="font-size:13px;color:var(--dim);margin-bottom:8px;">${gpu_list}</div>
+      <div class="stat-row"><span class="stat-label">内存总量</span><span class="stat-value">${d.memory.total_gb} GB</span></div>
+      <div class="stat-row"><span class="stat-label">内存已用</span><span class="stat-value">${d.memory.used_gb} GB (${d.memory.percent}%)</span></div>
+      <div class="stat-row"><span class="stat-label">可用内存</span><span class="stat-value green">${d.memory.available_gb} GB</span></div>
+      <div class="stat-row"><span class="stat-label">本地算力估算</span><span class="stat-value green">${d.local_tops} TOPS</span></div>
+    `;
+
+    let mm = '<div>';
+    if (!d.models.length) mm += '<p style="color:var(--dim);">未检测到本地安装的模型。安装 Ollama 或 LM Studio 后可自动发现。</p>';
+    else d.models.forEach(m=>{
+      mm += `<div class="stat-row"><span>${m.name}</span><span style="font-size:12px;color:var(--dim);">${m.source} · ${m.size}</span></div>`;
+    });
+    mm += '<p style="margin-top:12px;font-size:12px;color:var(--dim);">7B以下模型可在一体机50TOPS上本地运行，零Token费用。</p>';
+    mm += '</div>';
+    document.getElementById('modal-models-content').innerHTML = mm;
+  });
+}
+updateSystem(); setInterval(updateSystem, 10000);
+
+// ─── 平台连接 ──────────────────────────────────────────────────────
+function updatePlatform() {
+  fetch('/api/platform/stats').then(r=>r.json()).then(d=>{
+    if (d.error) {
+      document.getElementById('status-platform').textContent = '离线';
+      document.getElementById('status-platform').className = 'stat-value';
+      document.getElementById('status-nodes').textContent = '--';
+    } else {
+      document.getElementById('status-platform').textContent = '在线';
+      document.getElementById('status-platform').className = 'stat-value green';
+      document.getElementById('status-nodes').textContent = (d.total_nodes||'--') + ' 节点 · ' + (d.total_tops||'--') + ' TOPS';
+    }
+  }).catch(()=>{
+    document.getElementById('status-platform').textContent = '离线';
+    document.getElementById('status-nodes').textContent = '--';
+  });
+
+  fetch('/api/system').then(r=>r.json()).then(d=>{
+    document.getElementById('status-ip').textContent = 'localhost:5151';
+  });
+}
+updatePlatform(); setInterval(updatePlatform, 15000);
+
+// ─── 广电商城 ──────────────────────────────────────────────────────
+function updateMall() {
+  fetch('/api/platform/skills').then(r=>r.json()).then(d=>{
+    if (d.error) {
+      document.getElementById('mall-preview').textContent = '平台未连接';
+      return;
+    }
+    let s = d.slice ? d : (d.skills||[]);
+    let local = s.filter(x=>x.local_deploy).length;
+    let dist = s.filter(x=>!x.local_deploy).length;
+    document.getElementById('mall-preview').innerHTML = `
+      <div>${s.length} 个Skill可用</div>
+    `;
+    document.getElementById('modal-mall-content').innerHTML = s.map(sk=>`
+      <div class="skill-row">
+        <div style="flex:1;">
+          <div class="skill-name">${sk.name} ${sk.skill_url ? '🌐' : ''}</div>
+          <div style="font-size:12px;color:var(--dim);">${sk.description}</div>
+        </div>
+        <div style="text-align:right;min-width:120px;">
+          <div style="font-size:11px;color:var(--dim);margin-top:2px;">${sk.tops_required??'--'} TOPS</div>
+          <div style="margin-top:4px;">
+            <span style="font-weight:600;margin-right:8px;">${sk.price>0?'¥'+sk.price:'免费'}</span>
+            <button onclick="installSkill(${sk.id}, '${sk.name}')" style="background:var(--primary);border:none;color:#fff;padding:3px 12px;border-radius:6px;font-size:12px;cursor:pointer;">安装</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }).catch(()=>{
+    document.getElementById('mall-preview').textContent = '平台未连接';
+  });
+}
+updateMall(); setInterval(updateMall, 30000);
+
+// ─── 计费仪表盘 ────────────────────────────────────────────────────
+function updateBilling() {
+  fetch('/api/billing/summary').then(r=>r.json()).then(d=>{
+    document.getElementById('bill-local').textContent = d.local_tops + ' TOPS';
+    document.getElementById('bill-tokens').textContent = d.total_tokens.toFixed(1) + ' CPT';
+    document.getElementById('bill-cost').textContent = '¥' + d.total_cost_yuan.toFixed(2);
+
+    let localPct = d.local_tokens/(d.total_tokens||1)*100;
+    document.getElementById('tops-local-bar').style.width = localPct + '%';
+    document.getElementById('tops-dist-bar').style.width = (100-localPct) + '%';
+
+    document.getElementById('modal-billing-content').innerHTML = `
+      <div style="margin-bottom:16px;">
+        <div class="stat-row"><span class="stat-label">本地算力</span><span class="stat-value green">${d.local_tops} TOPS</span></div>
+        <div class="stat-row"><span class="stat-label">总Token消耗</span><span class="stat-value orange">${d.total_tokens.toFixed(1)} CPT</span></div>
+        <div class="stat-row"><span class="stat-label">本地调用</span><span class="stat-value green">${d.local_tokens.toFixed(1)} CPT</span></div>
+        <div class="stat-row"><span class="stat-label">分布式调用</span><span class="stat-value orange">${d.distributed_tokens.toFixed(1)} CPT</span></div>
+        <div class="stat-row"><span class="stat-label">今日费用</span><span class="stat-value">¥${d.total_cost_yuan.toFixed(2)}</span></div>
+        <div class="stat-row"><span class="stat-label">汇率</span><span class="stat-value" style="font-size:12px;">1 CPT = ¥${d.cpt_price}</span></div>
+      </div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Skill计费明细</div>
+      ${d.skills.map(s=>`
+        <div class="stat-row">
+          <span>${s.name}</span>
+          <span style="font-size:12px;">${s.calls_today}次 · ${s.tokens_used} CPT · ${s.tops} TOPS</span>
+        </div>
+      `).join('')}
+      <div style="margin-top:12px;font-size:11px;color:var(--dim);">
+        计费规则：7B以下模型本地50TOPS一体机运行（免费），大模型自动路由分布式集群，按CPT计费（1CPT=¥0.01）。
+      </div>
+    `;
+  });
+}
+updateBilling(); setInterval(updateBilling, 15000);
+
+// ─── 状态详情 ──────────────────────────────────────────────────────
+function updateStatusDetail() {
+  fetch('/api/platform/nodes').then(r=>r.json()).then(d=>{
+    if (!d.error && Array.isArray(d)) {
+      let online = d.filter(n=>n.status==='online').length;
+      let maint = d.filter(n=>n.status==='maintenance').length;
+      let off   = d.filter(n=>n.status==='offline').length;
+      let total_tops = d.reduce((s,n)=>s+(n.total_tops||0), 0);
+      let avail_tops = d.filter(n=>n.status==='online').reduce((s,n)=>s+(n.available_tops||0), 0);
+      document.getElementById('modal-status-content').innerHTML = `
+        <div class="stat-row"><span class="stat-label">集群总算力</span><span class="stat-value blue">${total_tops} TOPS</span></div>
+        <div class="stat-row"><span class="stat-label">可用算力</span><span class="stat-value green">${avail_tops} TOPS</span></div>
+        <div class="stat-row"><span class="stat-label">在线节点</span><span class="stat-value green">${online}</span></div>
+        <div class="stat-row"><span class="stat-label">维护中</span><span class="stat-value orange">${maint}</span></div>
+        <div class="stat-row"><span class="stat-label">离线</span><span class="stat-value">${off}</span></div>
+        <div class="stat-row"><span class="stat-label">广电平台</span><span class="stat-value green">127.0.0.1:8080</span></div>
+        <div class="stat-row"><span class="stat-label">TV应用</span><span class="stat-value green">127.0.0.1:5151</span></div>
+        <p style="margin-top:12px;font-size:12px;color:var(--dim);">100台50TOPS一体机，覆盖长沙市区(~2km²)</p>
+      `;
+    } else {
+      document.getElementById('modal-status-content').innerHTML = '<p style="color:var(--dim);">广电平台未启动，请先运行 guangdian-platform</p>';
+    }
+  }).catch(()=>{
+    document.getElementById('modal-status-content').innerHTML = '<p style="color:var(--dim);">无法连接到广电平台 (127.0.0.1:8080)</p>';
+  });
+}
+
+// ─── 模态框 ────────────────────────────────────────────────────────
+function openSystemModal()  { document.getElementById('modal-system').classList.remove('hidden'); }
+function openModelsModal()  { document.getElementById('modal-models').classList.remove('hidden'); }
+function openMallModal()    { document.getElementById('modal-mall').classList.remove('hidden'); updateMall(); }
+function openBillingModal() { document.getElementById('modal-billing').classList.remove('hidden'); updateBilling(); }
+function openWeatherModal() { document.getElementById('modal-weather').classList.remove('hidden'); }
+function openStatusModal()  { document.getElementById('modal-status').classList.remove('hidden'); updateStatusDetail(); }
+function closeModal(id)     { document.getElementById(id).classList.add('hidden'); }
+
+// 点击遮罩关闭
+document.querySelectorAll('.modal-overlay').forEach(ov=>{
+  ov.addEventListener('click', function(e) { if (e.target === ov) ov.classList.add('hidden'); });
+});
+
+// 键盘导航 ESC 关闭
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m=>m.classList.add('hidden'));
+  }
+});
+
+// ─── 动态应用卡片（基于已安装的Skill）────────────────────────────
+function installSkill(skillId, skillName) {
+  fetch('/api/tv/install', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({skill_id: skillId})
+  }).then(r=>r.json()).then(d=>{
+    alert(d.message || '安装成功');
+    updateInstalledApps();
+    updateModelsWithInstalled();
+    updateBilling();
+  }).catch(e=>alert('安装失败: '+e));
+}
+
+function uninstallSkill(skillName) {
+  if (!confirm(`确认卸载 ${skillName}？`)) return;
+  fetch('/api/tv/uninstall', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({skill_name: skillName})
+  }).then(r=>r.json()).then(d=>{
+    alert(d.message || '已卸载');
+    updateInstalledApps();
+    updateModelsWithInstalled();
+    updateBilling();
+  }).catch(e=>alert('卸载失败: '+e));
+}
+
+function trackCall(skillName) {
+  fetch('/api/tv/record-call', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({skill_name: skillName})
+  }).then(() => setTimeout(updateBilling, 500));
+}
+
+function updateInstalledApps() {
+  fetch('/api/tv/installed').then(r=>r.json()).then(d=>{
+    const installed = d.installed || [];
+    const webApps = installed.filter(s => s.skill_url);
+    const localModels = installed.filter(s => s.local_deploy && !s.skill_url);
+
+    // Card 5
+    const card1 = document.getElementById('card-installed-app1');
+    if (webApps.length > 0) {
+      const app = webApps[0];
+      card1.classList.remove('hidden');
+      card1.href = app.skill_url;
+      card1.target = '_blank';
+      card1.onclick = function(e) { trackCall(app.name); };
+      document.getElementById('app1-icon').textContent = app.name.includes('deepedu') ? '🎓' : '📦';
+      document.getElementById('app1-name').textContent = app.name;
+      document.getElementById('app1-desc').textContent = (app.description||'').slice(0,60);
+      document.getElementById('app1-badges').innerHTML =
+        `<span onclick="event.preventDefault();event.stopPropagation();uninstallSkill('${app.name}')" style="display:inline-block;margin-top:4px;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);padding:2px 10px;border-radius:10px;cursor:pointer;font-size:11px;font-weight:600;">卸载</span>`;
+    } else {
+      card1.classList.add('hidden');
+    }
+
+    // Card 6
+    const card2 = document.getElementById('card-installed-app2');
+    if (webApps.length > 1) {
+      const app = webApps[1];
+      card2.classList.remove('hidden');
+      card2.href = app.skill_url;
+      card2.target = '_blank';
+      card2.onclick = function(e) { trackCall(app.name); };
+      document.getElementById('app2-icon').textContent = '📦';
+      document.getElementById('app2-name').textContent = app.name;
+      document.getElementById('app2-desc').textContent = (app.description||'').slice(0,60);
+      document.getElementById('app2-badges').innerHTML =
+        `<span onclick="event.preventDefault();event.stopPropagation();uninstallSkill('${app.name}')" style="display:inline-block;margin-top:4px;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);padding:2px 10px;border-radius:10px;cursor:pointer;font-size:11px;font-weight:600;">卸载</span>`;
+    } else if (localModels.length > 0) {
+      const lm = localModels[0];
+      card2.classList.remove('hidden');
+      card2.href = 'javascript:void(0)';
+      card2.onclick = function(e) { e.preventDefault(); openModelsModal(); };
+      document.getElementById('app2-icon').textContent = '🧠';
+      document.getElementById('app2-name').textContent = lm.name;
+      document.getElementById('app2-desc').textContent = (lm.description||'').slice(0,60);
+      document.getElementById('app2-badges').innerHTML =
+        `<span onclick="event.preventDefault();event.stopPropagation();uninstallSkill('${lm.name}')" style="display:inline-block;margin-top:4px;background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3);padding:2px 10px;border-radius:10px;cursor:pointer;font-size:11px;font-weight:600;">卸载</span>`;
+    } else {
+      card2.classList.add('hidden');
+    }
+  });
+}
+
+function updateModelsWithInstalled() {
+  fetch('/api/tv/installed').then(r=>r.json()).then(d=>{
+    const localModels = (d.installed||[]).filter(s => s.local_deploy && !s.skill_url);
+    const modelDiv = document.getElementById('model-list');
+    if (localModels.length > 0) {
+      let html = modelDiv.innerHTML.replace('暂无检测到本地模型','');
+      localModels.forEach(lm => {
+        if (!html.includes(lm.name)) {
+          html += `<span class="model-tag" style="background:rgba(16,185,129,.2);color:#6ee7b7;">${lm.name.slice(0,18)} [已安装]</span>`;
+        }
+      });
+      modelDiv.innerHTML = html;
+    }
+  });
+}
+
+// Hook into system update cycle
+const origUpdateSystem = updateSystem;
+updateSystem = function() {
+  origUpdateSystem();
+  updateInstalledApps();
+  updateModelsWithInstalled();
+};
+setTimeout(()=>{ updateInstalledApps(); updateModelsWithInstalled(); }, 2000);
+
+// ─── 远程遥控器命令监听 ─────────────────────────────────────────────
+const CARD_IDS = [
+  'card-system', 'card-models', 'card-mall', 'card-billing',
+  'card-installed-app1', 'card-installed-app2', 'card-weather', 'card-status'
+];
+const COLS = 4;
+let cursorIdx = -1;
+let remoteConnected = false;
+let remoteIdleTimer = null;
+const cursorEl = document.getElementById('remote-cursor');
+const hintEl = document.getElementById('remote-hint');
+const statusEl = document.getElementById('remote-status');
+
+function setRemoteStatus(connected) {
+  remoteConnected = connected;
+  if (connected) {
+    statusEl.textContent = '遥控器已接入';
+    statusEl.style.color = '#10b981';
+  } else {
+    statusEl.textContent = '遥控器未连接';
+    statusEl.style.color = '';
+    cursorEl.classList.remove('active');
+  }
+}
+
+function updateCursor() {
+  if (cursorIdx < 0 || cursorIdx >= CARD_IDS.length) {
+    cursorEl.classList.remove('active');
+    return;
+  }
+  const card = document.getElementById(CARD_IDS[cursorIdx]);
+  if (!card || card.classList.contains('hidden')) {
+    cursorEl.classList.remove('active');
+    return;
+  }
+  const r = card.getBoundingClientRect();
+  const pad = 4;
+  cursorEl.style.left = (r.left - pad) + 'px';
+  cursorEl.style.top = (r.top - pad) + 'px';
+  cursorEl.style.width = (r.width + pad*2) + 'px';
+  cursorEl.style.height = (r.height + pad*2) + 'px';
+  cursorEl.classList.add('active');
+  cursorEl.classList.remove('remote-cursor-idle');
+  clearTimeout(remoteIdleTimer);
+  remoteIdleTimer = setTimeout(() => cursorEl.classList.add('remote-cursor-idle'), 2000);
+}
+
+function showHint(text) {
+  hintEl.textContent = text;
+  hintEl.classList.add('show');
+  clearTimeout(hintEl._t);
+  hintEl._t = setTimeout(() => hintEl.classList.remove('show'), 1500);
+}
+
+function moveCursor(dx, dy) {
+  if (cursorIdx < 0) {
+    cursorIdx = 0;
+  } else {
+    let row = Math.floor(cursorIdx / COLS);
+    let col = cursorIdx % COLS;
+    col = Math.max(0, Math.min(COLS - 1, col + dx));
+    row = Math.max(0, Math.min(Math.floor((CARD_IDS.length - 1) / COLS), row + dy));
+    let newIdx = row * COLS + col;
+    // Skip hidden cards
+    while (newIdx < CARD_IDS.length && document.getElementById(CARD_IDS[newIdx])?.classList.contains('hidden')) {
+      col++;
+      if (col >= COLS) { row++; col = 0; }
+      newIdx = row * COLS + col;
+    }
+    if (newIdx >= CARD_IDS.length) newIdx = cursorIdx;
+    cursorIdx = newIdx;
+  }
+  updateCursor();
+  const name = document.getElementById(CARD_IDS[cursorIdx])?.querySelector('.card-title')?.textContent || '';
+  showHint(name);
+}
+
+function cursorClick() {
+  if (cursorIdx < 0) return;
+  const card = document.getElementById(CARD_IDS[cursorIdx]);
+  if (!card || card.classList.contains('hidden')) return;
+  const name = card.querySelector('.card-title')?.textContent || '';
+  showHint('OK - ' + name);
+
+  // 应用卡片：iframe 内嵌，保持遥控器在线
+  if (card.tagName === 'A' && card.href && card.href !== '#' && !card.href.startsWith('javascript:')) {
+    openAppFrame(card.href, name);
+    return;
+  }
+  card.click();
+}
+
+// ─── App iframe (in original frame) ───────────────────────────────────
+function openAppFrame(url, name) {
+  document.getElementById('app-frame-title').textContent = name;
+  document.getElementById('app-iframe').src = url;
+  document.querySelector('.main-grid').style.display = 'none';
+  document.getElementById('app-frame').classList.add('open');
+  showRemoteToast('已打开: ' + name);
+}
+
+function closeAppFrame() {
+  document.getElementById('app-frame').classList.remove('open');
+  document.getElementById('app-iframe').src = '';
+  document.querySelector('.main-grid').style.display = '';
+  showRemoteToast('已返回TV首页');
+}
+
+function postMessageToApp(msg) {
+  const iframe = document.getElementById('app-iframe');
+  if (iframe && iframe.contentWindow) {
+    iframe.contentWindow.postMessage(msg, '*');
+    return true;
+  }
+  return false;
+}
+
+async function uninstallSkillByVoice(nameHint) {
+  const r = await fetch('/api/tv/installed');
+  const d = await r.json();
+  const match = (d.installed || []).find(s => s.name.toLowerCase().includes(nameHint.toLowerCase()));
+  if (!match) { showRemoteToast('未找到: ' + nameHint); return; }
+  const ok = confirm(`语音指令：确认卸载 ${match.name}？`);
+  if (ok) uninstallSkill(match.name);
+}
+
+function handleRemoteCommand(cmd) {
+  const c = String(cmd).toLowerCase();
+
+  // Connection heartbeat
+  if (!remoteConnected) setRemoteStatus(true);
+
+  // ── 结构化命令（来自 LLM 意图识别）────────────────────────────
+  if (c.startsWith('open:')) {
+    const app = c.replace('open:', '').trim();
+    showRemoteToast('打开: ' + app);
+    const cardMap = { 'deepedu': 'card-installed-app1', 'deepcat': 'card-installed-app2' };
+    const cardId = cardMap[app];
+    if (cardId) {
+      const card = document.getElementById(cardId);
+      if (card && !card.classList.contains('hidden') && card.href && card.href !== '#') openAppFrame(card.href, app);
+      else showRemoteToast(app + ' 未安装');
+    } else showRemoteToast('未知应用: ' + app);
+    return;
+  }
+  if (c.startsWith('modal:')) {
+    const modal = c.replace('modal:', '').trim();
+    const modalMap = {
+      'mall': openMallModal, 'system': openSystemModal, 'models': openModelsModal,
+      'weather': openWeatherModal, 'status': openStatusModal, 'billing': openBillingModal
+    };
+    if (modalMap[modal]) { modalMap[modal](); }
+    else showRemoteToast('未知面板: ' + modal);
+    return;
+  }
+  if (c.startsWith('uninstall:')) {
+    const app = c.replace('uninstall:', '').trim();
+    const nameMap = { 'deepedu': 'deepedu.school', 'deepcat': 'DeepCat' };
+    const nameHint = nameMap[app] || app;
+    uninstallSkillByVoice(nameHint);
+    return;
+  }
+
+  // ── 文本输入转发到 App ───────────────────────────────────
+  if (c.startsWith('text:')) {
+    const text = c.replace('text:', '').trim();
+    if (postMessageToApp({type: 'tv-remote', action: 'input', text: text})) {
+      showRemoteToast('已输入: ' + text);
+    } else {
+      showRemoteToast('当前不在应用中');
+    }
+    return;
+  }
+
+  // ── 旧版 voice: 指令（兜底）──────────────────────────────────
+  if (c.startsWith('voice:')) {
+    const vcmd = c.replace('voice:', '').trim();
+    showRemoteToast('语音: ' + vcmd);
+    if (vcmd.includes('商城') || vcmd.includes('市场')) openMallModal();
+    else if (vcmd.includes('系统') || vcmd.includes('资源') || vcmd.includes('本机')) openSystemModal();
+    else if (vcmd.includes('模型')) openModelsModal();
+    else if (vcmd.includes('天气')) openWeatherModal();
+    else if (vcmd.includes('状态') || vcmd.includes('连接')) openStatusModal();
+    else if (vcmd.includes('计费') || vcmd.includes('仪表')) openBillingModal();
+    else if (vcmd.includes('卸载deepedu') || vcmd.includes('卸载教育') || vcmd.includes('卸载学校')) {
+      uninstallSkillByVoice('deepedu.school');
+    }
+    else if (vcmd.includes('卸载deepcat') || vcmd.includes('卸载动画')) {
+      uninstallSkillByVoice('DeepCat');
+    }
+    else if (vcmd.includes('deepedu') || vcmd.includes('deepschool') || vcmd.includes('school') || vcmd.includes('教育') || vcmd.includes('学校')) {
+      const card = document.getElementById('card-installed-app1');
+      if (!card.classList.contains('hidden') && card.href && card.href !== '#') openAppFrame(card.href, 'DeepEdu');
+      else showRemoteToast('deepedu 未安装');
+    }
+    else if (vcmd.includes('deepcat') || vcmd.includes('动画')) {
+      const card = document.getElementById('card-installed-app2');
+      if (!card.classList.contains('hidden') && card.href && card.href !== '#') openAppFrame(card.href, 'DeepCat');
+      else showRemoteToast('DeepCat 未安装');
+    }
+    else showRemoteToast('未知命令: ' + vcmd);
+    return;
+  }
+
+  // ── 当 App 打开时，转发导航到 App ──────────────
+  const appFrame = document.getElementById('app-frame');
+  if (appFrame.classList.contains('open')) {
+    const dirMap = { up: 'up', down: 'down', left: 'left', right: 'right', ok: 'enter', back: 'back' };
+    if (dirMap[c]) {
+      postMessageToApp({type: 'tv-remote', action: 'navigate', direction: dirMap[c]});
+      return;
+    }
+    // home/back 优先关闭 App
+    if (c === 'home' || c === 'back') {
+      closeAppFrame();
+      return;
+    }
+    // voice: 命令也在 app 内转发
+    if (c.startsWith('voice:')) {
+      postMessageToApp({type: 'tv-remote', action: 'voice', text: c.replace('voice:', '').trim()});
+      return;
+    }
+    return;
+  }
+
+  switch(c) {
+    case 'up':    moveCursor(0, -1); break;
+    case 'down':  moveCursor(0, 1); break;
+    case 'left':  moveCursor(-1, 0); break;
+    case 'right': moveCursor(1, 0); break;
+    case 'ok':    cursorClick(); break;
+    case 'home':
+      cursorIdx = -1;
+      cursorEl.classList.remove('active');
+      document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m=>m.classList.add('hidden'));
+      showRemoteToast('已返回首页');
+      break;
+    case 'back':
+      document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m=>m.classList.add('hidden'));
+      showRemoteToast('已返回');
+      break;
+    default:
+      showRemoteToast('遥控: ' + cmd);
+  }
+}
+
+function listenRemote() {
+  fetch('/api/tv/remote-command')
+    .then(r=>r.json())
+    .then(d=>{
+      if (d.command) handleRemoteCommand(d.command);
+      listenRemote();
+    })
+    .catch(()=>{
+      setRemoteStatus(false);
+      setTimeout(listenRemote, 2000);
+    });
+}
+
+// Idle disconnect detection: if no command for 30s, mark disconnected
+let remoteWatchdog = null;
+function resetRemoteWatchdog() {
+  clearTimeout(remoteWatchdog);
+  if (!remoteConnected) setRemoteStatus(true);
+  remoteWatchdog = setTimeout(() => setRemoteStatus(false), 35000);
+}
+
+function showRemoteToast(msg) {
+  let t = document.getElementById('remote-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'remote-toast';
+    t.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);background:rgba(59,130,246,.9);color:#fff;padding:8px 20px;border-radius:20px;font-size:14px;z-index:200;pointer-events:none;opacity:0;transition:opacity .3s;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=> t.style.opacity = '0', 1500);
+}
+
+listenRemote();
+</script>
+</body>
+</html>
