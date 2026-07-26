@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block title %}长沙广电算力试点{% endblock %}
+{% block page_title %}长沙广电算力试点·50TOPS一体机集群{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  #cluster-map { height: 420px; border-radius: 12px; margin-bottom: 24px; }
+  .node-popup { font-size: 13px; line-height: 1.6; }
+  .node-popup b { color: var(--primary); }
+  .cluster-legend { display: flex; gap: 16px; flex-wrap: wrap; padding: 6px 0; font-size: 12px; }
+  .cluster-legend span { display: flex; align-items: center; gap: 4px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 算力仪表盘 -->
+<div class="stats-grid">
+  <div class="stat-card primary">
+    <div class="stat-label">全网总算力</div>
+    <div class="stat-value" id="stat-total-tops">{{ stats.total_tops }}</div>
+    <div class="stat-sub">TOPS（含 {{ stats.total_nodes }} 台一体机）</div>
+  </div>
+  <div class="stat-card success">
+    <div class="stat-label">在线节点</div>
+    <div class="stat-value">{{ stats.online_nodes }}</div>
+    <div class="stat-sub">共 {{ stats.total_nodes }} 个节点</div>
+  </div>
+  <div class="stat-card warning">
+    <div class="stat-label">当前任务数</div>
+    <div class="stat-value">{{ stats.active_tasks }}</div>
+    <div class="stat-sub">实时处理中</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">平台可用率</div>
+    <div class="stat-value">99.97%</div>
+    <div class="stat-sub">过去30天</div>
+  </div>
+</div>
+
+<!-- 快捷入口 -->
+<div class="quick-entries">
+  <a href="/edu/tutor" class="quick-entry">
+    <div class="entry-icon">🧠</div>
+    <div class="entry-title">AI推理</div>
+    <div class="entry-desc">大模型实时推理服务</div>
+  </a>
+  <a href="/mall" class="quick-entry">
+    <div class="entry-icon">🎬</div>
+    <div class="entry-title">视频处理</div>
+    <div class="entry-desc">AI视频分析/转码/增强</div>
+  </a>
+  <a href="/admin/models" class="quick-entry">
+    <div class="entry-icon">🏛️</div>
+    <div class="entry-title">模型广场</div>
+    <div class="entry-desc">8大主流AI模型</div>
+  </a>
+  <a href="/mall" class="quick-entry">
+    <div class="entry-icon">🛒</div>
+    <div class="entry-title">Skill市场</div>
+    <div class="entry-desc">15+广电专属Skill</div>
+  </a>
+</div>
+
+<!-- 长沙算力集群地图 -->
+<div class="card" style="margin-bottom:24px;">
+  <div class="card-header">
+    <span>长沙算力集群 · 一体机分布地图</span>
+    <span class="badge badge-success">在线 <span id="map-online">-</span>/<span id="map-total">-</span> 台</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <div style="display:flex; align-items:center; gap:12px; padding:10px 16px; background:var(--gray-50);">
+      <div class="cluster-legend">
+        <span><span class="legend-dot" style="background:#22c55e;"></span> 在线</span>
+        <span><span class="legend-dot" style="background:#f59e0b;"></span> 维护</span>
+        <span><span class="legend-dot" style="background:#ef4444;"></span> 离线</span>
+        <span style="color:var(--gray-500);">| 长沙市中心 · 100台×50TOPS一体机集群</span>
+      </div>
+    </div>
+    <div id="cluster-map"></div>
+    <div id="node-detail" style="display:none; padding:16px; border-top:1px solid var(--gray-200); background:var(--gray-50);"></div>
+  </div>
+</div>
+
+<!-- 广电账号登录 + 最近任务 -->
+<div class="grid-2" style="margin-bottom:24px;">
+  <div class="card">
+    <div class="card-header">长沙广电账号登录</div>
+    <div class="card-body">
+      {% if user %}
+      <div style="text-align:center; padding:20px;">
+        <div style="font-size:40px; margin-bottom:8px;">✅</div>
+        <p style="font-weight:600;">欢迎，{{ user.username }}</p>
+        <p style="color:var(--gray-500); font-size:13px;">广电账号：{{ user.tv_account or '未绑定' }}</p>
+        <p style="color:var(--gray-500); font-size:13px;">账户余额：¥{{ "%.2f"|format(user.balance) }}</p>
+      </div>
+      {% else %}
+      <form action="/login" method="post" style="max-width:300px; margin:0 auto;">
+        <div class="form-group">
+          <label>广电宽带账号/用户名</label>
+          <input type="text" name="username" class="form-input" placeholder="请输入账号" required>
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" name="password" class="form-input" placeholder="请输入密码" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">一键登录</button>
+      </form>
+      <p style="text-align:center; margin-top:12px; font-size:12px; color:var(--gray-500);">测试账号：admin / admin123 或 user01 / user123</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">最近任务</div>
+    <div class="card-body">
+      {% if recent_tasks %}
+      <table>
+        <thead>
+          <tr><th>ID</th><th>类型</th><th>状态</th><th>TOPS</th><th>时间</th></tr>
+        </thead>
+        <tbody>
+          {% for task in recent_tasks %}
+          <tr>
+            <td>#{{ task.id }}</td>
+            <td>{{ task.type }}</td>
+            <td>
+              {% if task.status == 'running' %}<span class="badge badge-success">运行中</span>
+              {% elif task.status == 'completed' %}<span class="badge badge-info">已完成</span>
+              {% elif task.status == 'pending' %}<span class="badge badge-warning">等待中</span>
+              {% else %}<span class="badge badge-gray">{{ task.status }}</span>
+              {% endif %}
+            </td>
+            <td>{{ task.tops_used }} TOPS</td>
+            <td style="font-size:12px;">{{ task.created_at }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>暂无任务记录</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- 模型与Skill快速浏览 -->
+<div class="card">
+  <div class="card-header">热门 Skill 推荐</div>
+  <div class="card-body">
+    <div style="display:flex; gap:12px; overflow-x:auto; padding-bottom:8px;">
+      <div style="min-width:180px; padding:16px; background:var(--gray-50); border-radius:8px; text-align:center;">
+        <div style="font-size:32px;">🤖</div>
+        <div style="font-weight:600; margin-top:8px;">AI数学家教</div>
+        <div style="font-size:12px; color:var(--gray-500);">教育类 · 免费</div>
+        <div style="color:var(--warning);">★★★★☆ 4.8</div>
+      </div>
+      <div style="min-width:180px; padding:16px; background:var(--gray-50); border-radius:8px; text-align:center;">
+        <div style="font-size:32px;">📊</div>
+        <div style="font-weight:600; margin-top:8px;">智能PPT生成</div>
+        <div style="font-size:12px; color:var(--gray-500);">办公类 · ¥29.9</div>
+        <div style="color:var(--warning);">★★★★☆ 4.5</div>
+      </div>
+      <div style="min-width:180px; padding:16px; background:var(--gray-50); border-radius:8px; text-align:center;">
+        <div style="font-size:32px;">📺</div>
+        <div style="font-weight:600; margin-top:8px;">电视AI助手</div>
+        <div style="font-size:12px; color:var(--gray-500);">广电特色 · 免费</div>
+        <div style="color:var(--warning);">★★★★☆ 4.6</div>
+      </div>
+      <div style="min-width:180px; padding:16px; background:var(--gray-50); border-radius:8px; text-align:center;">
+        <div style="font-size:32px;">🎨</div>
+        <div style="font-weight:600; margin-top:8px;">AI艺术画廊</div>
+        <div style="font-size:12px; color:var(--gray-500);">创意类 · ¥15.0</div>
+        <div style="color:var(--warning);">★★★★☆ 4.3</div>
+      </div>
+      <div style="min-width:180px; padding:16px; background:var(--gray-50); border-radius:8px; text-align:center;">
+        <div style="font-size:32px;">📝</div>
+        <div style="font-weight:600; margin-top:8px;">AI会议纪要</div>
+        <div style="font-size:12px; color:var(--gray-500);">办公类 · ¥19.9</div>
+        <div style="color:var(--warning);">★★★★☆ 4.4</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(async function() {
+  const map = L.map('cluster-map').setView([28.2282, 112.9388], 14);
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    subdomains: '1234', attribution: '&copy; 高德地图', maxZoom: 18
+  }).addTo(map);
+
+  const resp = await fetch('/api/nodes');
+  const data = await resp.json();
+  const nodes = data.nodes;
+
+  let online = 0;
+  const statusColors = { online: '#22c55e', maintenance: '#f59e0b', offline: '#ef4444' };
+
+  nodes.forEach(n => {
+    if (n.status === 'online') online++;
+    const color = statusColors[n.status] || '#9ca3af';
+    const marker = L.circleMarker([n.latitude, n.longitude], {
+      radius: 7, fillColor: color, color: '#fff', weight: 1, fillOpacity: 0.85
+    }).addTo(map);
+
+    const modelInfo = n.model_name
+      ? `<br><b>运行模型：</b>${n.model_name}（${n.model_type || '-'}）`
+      : '<br><b>运行模型：</b>未分配';
+
+    marker.bindPopup(`
+      <div class="node-popup">
+        <b>${n.name}</b><br>
+        <b>IP：</b>${n.ip_address}<br>
+        <b>总算力：</b>${n.tops_capacity} TOPS<br>
+        <b>可用算力：</b>${n.available_tops} TOPS<br>
+        <b>负载：</b>${n.load} TOPS &nbsp;|&nbsp; <b>温度：</b>${n.temperature}°C${modelInfo}
+      </div>
+    `);
+
+    marker.on('click', () => {
+      document.getElementById('node-detail').style.display = 'block';
+      document.getElementById('node-detail').innerHTML = `
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+          <div><strong>名称</strong><br>${n.name}</div>
+          <div><strong>IP 地址</strong><br>${n.ip_address}</div>
+          <div><strong>状态</strong><br><span style="color:${color}; font-weight:600;">${n.status === 'online' ? '在线' : n.status === 'maintenance' ? '维护中' : '离线'}</span></div>
+          <div><strong>总算力</strong><br>${n.tops_capacity} TOPS</div>
+          <div><strong>可用算力</strong><br>${n.available_tops} TOPS</div>
+          <div><strong>当前负载</strong><br>${n.load} TOPS</div>
+          <div><strong>温度</strong><br>${n.temperature}°C</div>
+          <div><strong>运行模型</strong><br>${n.model_name || '未分配'}${n.model_type ? '（'+n.model_type+'）' : ''}</div>
+          <div><strong>运行时长</strong><br>${n.uptime}h</div>
+        </div>`;
+    });
+  });
+
+  document.getElementById('map-online').textContent = online;
+  document.getElementById('map-total').textContent = nodes.length;
+})();
+</script>
+{% endblock %}

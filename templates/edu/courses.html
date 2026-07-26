@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}课程广场 - deependu.school{% endblock %}
+{% block page_title %}课程广场{% endblock %}
+
+{% block content %}
+<div class="search-bar">
+  <input type="text" class="form-input" placeholder="搜索课程...">
+  <select class="form-select" style="width:auto;">
+    <option value="">全部学科</option>
+    <option>数学</option><option>物理</option><option>英语</option><option>编程</option><option>语文</option>
+  </select>
+  <button class="btn btn-primary">筛选</button>
+</div>
+
+<div class="skill-grid">
+  {% for course in courses %}
+  <div class="skill-card">
+    <div style="font-size:40px; text-align:center; margin-bottom:12px;">
+      {% if course.subject == '数学' %}📐
+      {% elif course.subject == '物理' %}⚛️
+      {% elif course.subject == '编程' %}💻
+      {% else %}📚{% endif %}
+    </div>
+    <div class="skill-name">{{ course.title }}</div>
+    <div style="margin-bottom:8px;">
+      <span class="badge badge-info">{{ course.subject }}</span>
+      <span class="badge badge-gray" style="margin-left:4px;">{{ course.grade }}</span>
+    </div>
+    <div class="skill-desc">{{ course.description }}</div>
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <a href="/edu/practice?course_id={{ course.id }}" class="btn btn-primary btn-sm">开始练习</a>
+      <a href="/edu/tutor" class="btn btn-outline btn-sm">AI辅导</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card" style="margin-top:20px;">
+  <div class="card-header">即将上线课程</div>
+  <div class="card-body">
+    <div class="grid-3">
+      <div style="padding:16px; background:var(--gray-50); border-radius:8px; text-align:center;">
+        <div style="font-size:32px;">🧪</div>
+        <div style="font-weight:600; margin-top:8px;">化学实验探究</div>
+        <div style="font-size:12px; color:var(--gray-500);">初中化学</div>
+      </div>
+      <div style="padding:16px; background:var(--gray-50); border-radius:8px; text-align:center;">
+        <div style="font-size:32px;">🌍</div>
+        <div style="font-weight:600; margin-top:8px;">地理知识图谱</div>
+        <div style="font-size:12px; color:var(--gray-500);">高中地理</div>
+      </div>
+      <div style="padding:16px; background:var(--gray-50); border-radius:8px; text-align:center;">
+        <div style="font-size:32px;">🎵</div>
+        <div style="font-weight:600; margin-top:8px;">AI音乐创作</div>
+        <div style="font-size:12px; color:var(--gray-500);">艺术素养</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}API控制台 - 开放平台{% endblock %}
+{% block page_title %}API调试控制台{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+  <!-- 请求构建器 -->
+  <div class="card">
+    <div class="card-header">请求构建器</div>
+    <div class="card-body">
+      <div class="form-group">
+        <label>请求方法</label>
+        <select class="form-select" id="api-method">
+          <option value="GET">GET</option>
+          <option value="POST">POST</option>
+          <option value="DELETE">DELETE</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>接口路径</label>
+        <input type="text" class="form-input" id="api-path" value="/api/stats" placeholder="/api/v1/...">
+      </div>
+      <div class="form-group">
+        <label>请求体 (JSON)</label>
+        <textarea class="form-textarea" id="api-body" placeholder='{"key": "value"}' style="min-height:120px; font-family:monospace;"></textarea>
+      </div>
+      <button class="btn btn-primary" id="api-send">发送请求</button>
+    </div>
+  </div>
+
+  <!-- 响应查看器 -->
+  <div class="card">
+    <div class="card-header">响应结果</div>
+    <div class="card-body">
+      <div style="margin-bottom:8px;">
+        <span style="font-size:12px; color:var(--gray-500);">状态码：</span>
+        <span id="api-status" style="font-weight:600;">-</span>
+      </div>
+      <pre id="api-response" style="background:var(--gray-900); color:#10b981; padding:16px; border-radius:8px; min-height:200px; max-height:400px; overflow-y:auto; font-size:13px; white-space:pre-wrap;">
+点击"发送请求"查看结果...
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- 常用接口 -->
+<div class="card" style="margin-top:20px;">
+  <div class="card-header">常用接口快捷测试</div>
+  <div class="card-body">
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <button class="btn btn-outline btn-sm test-api" data-path="/api/stats">平台统计</button>
+      <button class="btn btn-outline btn-sm test-api" data-path="/api/nodes">节点列表</button>
+      <button class="btn btn-outline btn-sm test-api" data-method="POST" data-path="/api/ai/chat" data-body='{"message":"你好"}'>AI对话</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+  var sendBtn = document.getElementById('api-send');
+  sendBtn.addEventListener('click', async function() {
+    var method = document.getElementById('api-method').value;
+    var path = document.getElementById('api-path').value;
+    var bodyStr = document.getElementById('api-body').value;
+    var opts = { method: method, headers: {} };
+    if (method === 'POST' && bodyStr) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = bodyStr;
+    }
+    try {
+      var res = await fetch(path, opts);
+      var text = await res.text();
+      document.getElementById('api-status').textContent = res.status;
+      try {
+        var json = JSON.parse(text);
+        document.getElementById('api-response').textContent = JSON.stringify(json, null, 2);
+      } catch(e) {
+        document.getElementById('api-response').textContent = text;
+      }
+    } catch(e) {
+      document.getElementById('api-response').textContent = 'Error: ' + e.message;
+    }
+  });
+
+  document.querySelectorAll('.test-api').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var path = this.getAttribute('data-path');
+      var method = this.getAttribute('data-method') || 'GET';
+      var body = this.getAttribute('data-body') || '';
+      document.getElementById('api-method').value = method;
+      document.getElementById('api-path').value = path;
+      document.getElementById('api-body').value = body;
+      sendBtn.click();
+    });
+  });
+})();
+</script>
+{% endblock %}

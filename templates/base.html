@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}广电算力生态平台{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <div class="app-layout">
+    <!-- 侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">📡</div>
+        <span>长沙广电算力试点</span>
+      </div>
+      <nav class="sidebar-nav">
+        <!-- 门户 -->
+        <div class="sidebar-section">广电门户</div>
+        <a href="/" class="sidebar-link {% if request.url.path == '/' %}active{% endif %}">
+          <span class="nav-icon">🏠</span> 首页仪表盘
+        </a>
+
+        <!-- 管理后台 -->
+        {% if user and user.role == 'admin' %}
+        <div class="sidebar-section">管理后台</div>
+        <a href="/admin" class="sidebar-link {% if '/admin' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">📊</span> 监控大屏
+        </a>
+        <a href="/admin/models" class="sidebar-link {% if '/admin/models' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">🧠</span> 模型管理
+        </a>
+        <a href="/admin/billing" class="sidebar-link {% if '/admin/billing' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">💰</span> 计费管理
+        </a>
+        <a href="/admin/users" class="sidebar-link {% if '/admin/users' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">👥</span> 用户管理
+        </a>
+        <a href="/admin/tickets" class="sidebar-link {% if '/admin/tickets' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">🎫</span> 工单系统
+        </a>
+        {% endif %}
+
+        <!-- 开放平台 -->
+        <div class="sidebar-section">开放平台</div>
+        <a href="/developer" class="sidebar-link {% if '/developer' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">💻</span> 开发者中心
+        </a>
+        <a href="/developer/sdk" class="sidebar-link {% if '/developer/sdk' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">📋</span> SDK文档
+        </a>
+        <a href="/developer/console" class="sidebar-link {% if '/developer/console' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">🔧</span> API控制台
+        </a>
+
+        <!-- 广电商城 -->
+        <div class="sidebar-section">广电商城</div>
+        <a href="/mall" class="sidebar-link {% if '/mall' in request.url.path and '/my' not in request.url.path %}active{% endif %}">
+          <span class="nav-icon">🛒</span> Skill市场
+        </a>
+        <a href="/mall/my" class="sidebar-link {% if '/mall/my' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">📦</span> 我的Skill
+        </a>
+
+        <!-- 教育 -->
+        <div class="sidebar-section">deependu.school</div>
+        <a href="/edu" class="sidebar-link {% if request.url.path == '/edu' %}active{% endif %}">
+          <span class="nav-icon">🎓</span> 教育首页
+        </a>
+        <a href="/edu/tutor" class="sidebar-link {% if '/edu/tutor' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">🤖</span> AI家教
+        </a>
+        <a href="/edu/courses" class="sidebar-link {% if '/edu/courses' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">📚</span> 课程广场
+        </a>
+        <a href="/edu/practice" class="sidebar-link {% if '/edu/practice' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">✏️</span> 题库练习
+        </a>
+        <a href="/edu/report" class="sidebar-link {% if '/edu/report' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">📈</span> 学习报告
+        </a>
+
+        <!-- 电视端 -->
+        <div class="sidebar-section">家庭电视端</div>
+        <a href="/tv" class="sidebar-link {% if '/tv' in request.url.path %}active{% endif %}">
+          <span class="nav-icon">📺</span> 电视大屏
+        </a>
+      </nav>
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+      <!-- 顶部栏 -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="topbar-title">{% block page_title %}广电算力生态平台{% endblock %}</span>
+        </div>
+        <div class="topbar-right">
+          {% if user %}
+          <span class="topbar-user">
+            <span>👤 {{ user.username }}</span>
+            {% if user.role == 'admin' %}<span class="badge badge-info">管理员</span>{% endif %}
+            {% if user.role == 'developer' %}<span class="badge badge-warning">开发者</span>{% endif %}
+          </span>
+          <a href="/logout" class="btn btn-outline btn-sm">退出</a>
+          {% else %}
+          <a href="/login" class="btn btn-primary btn-sm">登录</a>
+          {% endif %}
+        </div>
+      </header>
+
+      <!-- 页面内容 -->
+      <div class="page-content">
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}广电商城 - Skill市场{% endblock %}
+{% block page_title %}广电商城 · Skill市场{% endblock %}
+
+{% block content %}
+<!-- 搜索+分类 -->
+<div class="search-bar">
+  <input type="text" class="form-input" placeholder="搜索Skill...">
+  <button class="btn btn-primary">搜索</button>
+</div>
+
+<div class="tabs">
+  <a href="/mall" class="tab {% if not category %}active{% endif %}">全部</a>
+  <a href="/mall?category=教育" class="tab {% if category=='教育' %}active{% endif %}">教育</a>
+  <a href="/mall?category=办公" class="tab {% if category=='办公' %}active{% endif %}">办公</a>
+  <a href="/mall?category=创意" class="tab {% if category=='创意' %}active{% endif %}">创意</a>
+  <a href="/mall?category=生活" class="tab {% if category=='生活' %}active{% endif %}">生活</a>
+  <a href="/mall?category=广电特色" class="tab {% if category=='广电特色' %}active{% endif %}">广电特色</a>
+</div>
+
+<!-- 算力规则提示 -->
+<div class="info-banner" style="margin-bottom:16px;">
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <span style="font-weight:600;color:var(--primary);">算力说明</span>
+    <span class="badge" style="background:#e8f5e9;color:#2e7d32;">🟢 本地部署</span> 7B以下模型，一体机50TOPS直接运行，零Token费用 &nbsp;
+    <span class="badge" style="background:#fff3e0;color:#e65100;">🟠 分布式</span> 大模型需调用集群算力，按次消耗Token
+  </div>
+</div>
+  {% for skill in skills %}
+  <div class="skill-card">
+    <div style="display:flex; justify-content:space-between; align-items:start;">
+      <div>
+        <div class="skill-name">{{ skill.name }}</div>
+        <div style="font-size:12px;">
+          <span class="badge badge-info">{{ skill.category }}</span>
+          <span style="color:var(--gray-400); margin-left:8px;">⭐ {{ skill.rating }}</span>
+        </div>
+      </div>
+      <div class="skill-price {% if skill.price == 0 %}free{% endif %}">
+        {% if skill.price == 0 %}免费{% else %}¥{{ "%.2f"|format(skill.price) }}{% endif %}
+      </div>
+    </div>
+    <div class="skill-desc">{{ skill.description }}</div>
+    <div class="skill-meta" style="display:flex;flex-direction:column;gap:4px;">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span>📥 {{ skill.installs }} 次安装</span>
+        {% if skill.local_deploy %}
+        <span class="badge" style="background:#e8f5e9;color:#2e7d32;">🟢 本地部署 · {{ "%.0f"|format(skill.tops_required) }} TOPS</span>
+        {% else %}
+        <span class="badge" style="background:#fff3e0;color:#e65100;">🟠 分布式 · {{ "%.0f"|format(skill.tops_required) }} TOPS · {{ "%.3f"|format(skill.token_cost_per_call) }} CPT/次</span>
+        {% endif %}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        {% if user %}
+          {% if skill.id in installed_ids %}
+          <span class="badge badge-success">已安装</span>
+          {% else %}
+          <button class="btn btn-primary btn-sm btn-install" data-skill-id="{{ skill.id }}">安装</button>
+          {% endif %}
+        {% else %}
+        <a href="/login" class="btn btn-outline btn-sm">登录后安装</a>
+        {% endif %}
+      </div>
+    </div>
+    <a href="/mall/detail/{{ skill.id }}" style="font-size:12px; display:block; margin-top:8px;">查看详情 →</a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/mall.js"></script>
+{% endblock %}

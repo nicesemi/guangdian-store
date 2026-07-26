@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}工单系统 - 管理后台{% endblock %}
+{% block page_title %}工单系统{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <span>工单列表</span>
+    <button class="btn btn-primary btn-sm">+ 创建工单</button>
+  </div>
+  <div class="card-body">
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>ID</th><th>用户</th><th>标题</th><th>描述</th><th>状态</th><th>创建时间</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+          {% for ticket in tickets %}
+          <tr>
+            <td>#{{ ticket.id }}</td>
+            <td>{{ ticket.user_id }}</td>
+            <td><strong>{{ ticket.title }}</strong></td>
+            <td style="max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ ticket.description }}</td>
+            <td>
+              {% if ticket.status == 'open' %}<span class="badge badge-warning">待处理</span>
+              {% elif ticket.status == 'processing' %}<span class="badge badge-info">处理中</span>
+              {% elif ticket.status == 'resolved' %}<span class="badge badge-success">已解决</span>
+              {% elif ticket.status == 'closed' %}<span class="badge badge-gray">已关闭</span>
+              {% endif %}
+            </td>
+            <td style="font-size:12px;">{{ ticket.created_at }}</td>
+            <td>
+              <button class="btn btn-outline btn-sm">处理</button>
+              <button class="btn btn-outline btn-sm">关闭</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-top:20px;">
+  <div class="card">
+    <div class="card-header">工单统计</div>
+    <div class="card-body">
+      <div style="display:flex; gap:16px;">
+        <div style="flex:1; text-align:center;">
+          <div style="font-size:28px; font-weight:700; color:var(--warning);">{{ tickets|selectattr('status', 'equalto', 'open')|list|length }}</div>
+          <div style="font-size:12px; color:var(--gray-500);">待处理</div>
+        </div>
+        <div style="flex:1; text-align:center;">
+          <div style="font-size:28px; font-weight:700; color:var(--primary);">{{ tickets|selectattr('status', 'equalto', 'processing')|list|length }}</div>
+          <div style="font-size:12px; color:var(--gray-500);">处理中</div>
+        </div>
+        <div style="flex:1; text-align:center;">
+          <div style="font-size:28px; font-weight:700; color:var(--success);">{{ tickets|selectattr('status', 'equalto', 'resolved')|list|length }}</div>
+          <div style="font-size:12px; color:var(--gray-500);">已解决</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">SLA 响应时效</div>
+    <div class="card-body">
+      <table>
+        <thead><tr><th>等级</th><th>响应时间</th><th>解决时间</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-danger">P0 紧急</span></td><td>15分钟</td><td>2小时</td></tr>
+          <tr><td><span class="badge badge-warning">P1 高</span></td><td>30分钟</td><td>8小时</td></tr>
+          <tr><td><span class="badge badge-info">P2 中</span></td><td>2小时</td><td>24小时</td></tr>
+          <tr><td><span class="badge badge-gray">P3 低</span></td><td>8小时</td><td>72小时</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

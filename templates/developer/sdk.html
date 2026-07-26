@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}SDK文档 - 开放平台{% endblock %}
+{% block page_title %}SDK与API文档{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header">Skill定义Schema</div>
+    <div class="card-body">
+      <pre style="background:var(--gray-900); color:#10b981; padding:16px; border-radius:8px; overflow-x:auto; font-size:13px; line-height:1.5;">
+{
+  "skill": {
+    "name": "string",           // Skill名称
+    "version": "1.0.0",         // 版本号
+    "category": "string",       // 分类：教育/办公/创意/生活/广电特色
+    "description": "string",    // 描述
+    "model_binding": {
+      "model_id": "int",        // 绑定的模型ID
+      "min_tops": 10            // 最低算力要求
+    },
+    "endpoint": {
+      "input_schema": {...},    // 输入参数校验
+      "output_schema": {...},   // 输出格式定义
+      "timeout_ms": 30000       // 超时时间
+    },
+    "pricing": {
+      "type": "free|paid|subscription",
+      "amount": 9.9,
+      "currency": "CNY"
+    }
+  }
+}</pre>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">API接口规范</div>
+    <div class="card-body">
+      <table>
+        <thead><tr><th>接口</th><th>方法</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>/api/v1/skills</td><td>GET</td><td>获取Skill列表</td></tr>
+          <tr><td>/api/v1/skills/{id}</td><td>GET</td><td>获取Skill详情</td></tr>
+          <tr><td>/api/v1/skills/{id}/install</td><td>POST</td><td>安装Skill</td></tr>
+          <tr><td>/api/v1/skills/{id}/uninstall</td><td>DELETE</td><td>卸载Skill</td></tr>
+          <tr><td>/api/v1/ai/chat</td><td>POST</td><td>AI对话接口</td></tr>
+          <tr><td>/api/v1/ai/inference</td><td>POST</td><td>AI推理接口</td></tr>
+          <tr><td>/api/v1/nodes</td><td>GET</td><td>节点状态查询</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:20px;">
+  <div class="card-header">代码示例 - Python SDK</div>
+  <div class="card-body">
+    <pre style="background:var(--gray-900); color:#10b981; padding:16px; border-radius:8px; overflow-x:auto; font-size:13px; line-height:1.5;">
+# 广电算力平台 Python SDK
+from guangdian_sdk import GuangDianClient
+
+# 初始化客户端
+client = GuangDianClient(api_key="your_api_key")
+
+# 安装Skill
+client.skills.install(skill_id=42)
+
+# 调用AI推理
+response = client.ai.inference(
+    model="Llama-3-70B",
+    prompt="解释量子计算的基本原理",
+    max_tokens=500
+)
+
+# 查询节点状态
+nodes = client.nodes.list(status="online")
+for node in nodes:
+    print(f"{node['name']}: {node['load']}% 负载")
+
+# 获取教育课程
+courses = client.edu.courses(subject="数学")
+</pre>
+  </div>
+</div>
+
+<div class="card" style="margin-top:20px;">
+  <div class="card-header">审核上架流程</div>
+  <div class="card-body">
+    <div style="display:flex; align-items:center; gap:12px; padding:12px;">
+      <div style="flex:1; text-align:center; padding:12px; background:var(--primary-bg); border-radius:8px;">
+        <div style="font-size:20px; font-weight:700;">1. 提交</div>
+        <div style="font-size:12px; color:var(--gray-500);">填写Skill信息</div>
+      </div>
+      <div style="color:var(--gray-300); font-size:20px;">→</div>
+      <div style="flex:1; text-align:center; padding:12px; background:#fef3c7; border-radius:8px;">
+        <div style="font-size:20px; font-weight:700;">2. 自动测试</div>
+        <div style="font-size:12px; color:var(--gray-500);">Schema校验+运行测试</div>
+      </div>
+      <div style="color:var(--gray-300); font-size:20px;">→</div>
+      <div style="flex:1; text-align:center; padding:12px; background:#dbeafe; border-radius:8px;">
+        <div style="font-size:20px; font-weight:700;">3. 人工审核</div>
+        <div style="font-size:12px; color:var(--gray-500);">内容与安全审查</div>
+      </div>
+      <div style="color:var(--gray-300); font-size:20px;">→</div>
+      <div style="flex:1; text-align:center; padding:12px; background:#d1fae5; border-radius:8px;">
+        <div style="font-size:20px; font-weight:700;">4. 上架</div>
+        <div style="font-size:12px; color:var(--gray-500);">商城可搜索安装</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}教师端 - deependu.school{% endblock %}
+{% block page_title %}教师端 · 班级管理中心{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+  <!-- 班级列表 -->
+  <div class="card">
+    <div class="card-header">
+      <span>我的班级</span>
+      <button class="btn btn-primary btn-sm">+ 创建班级</button>
+    </div>
+    <div class="card-body">
+      <table>
+        <thead><tr><th>班级</th><th>学生数</th><th>平均分</th><th>活跃度</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>初一(3)班</strong></td>
+            <td>45</td>
+            <td>82.5</td>
+            <td><span class="badge badge-success">高</span></td>
+          </tr>
+          <tr>
+            <td><strong>初一(5)班</strong></td>
+            <td>42</td>
+            <td>78.3</td>
+            <td><span class="badge badge-info">中</span></td>
+          </tr>
+          <tr>
+            <td><strong>初二(1)班</strong></td>
+            <td>40</td>
+            <td>85.1</td>
+            <td><span class="badge badge-success">高</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 学情概览 -->
+  <div class="card">
+    <div class="card-header">学情概览</div>
+    <div class="card-body">
+      <div style="display:flex; gap:16px; text-align:center;">
+        <div style="flex:1; padding:12px; background:var(--primary-bg); border-radius:8px;">
+          <div style="font-size:24px; font-weight:700; color:var(--primary);">127</div>
+          <div style="font-size:12px; color:var(--gray-500);">学生总数</div>
+        </div>
+        <div style="flex:1; padding:12px; background:#d1fae5; border-radius:8px;">
+          <div style="font-size:24px; font-weight:700; color:var(--success);">91%</div>
+          <div style="font-size:12px; color:var(--gray-500);">作业完成率</div>
+        </div>
+        <div style="flex:1; padding:12px; background:#fef3c7; border-radius:8px;">
+          <div style="font-size:24px; font-weight:700; color:var(--warning);">15</div>
+          <div style="font-size:12px; color:var(--gray-500);">需关注学生</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 布置作业 -->
+<div class="card" style="margin-top:20px;">
+  <div class="card-header">布置作业</div>
+  <div class="card-body">
+    <form id="homework-form" style="max-width:600px;">
+      <div class="grid-2">
+        <div class="form-group">
+          <label>选择班级</label>
+          <select class="form-select">
+            <option>初一(3)班</option>
+            <option>初一(5)班</option>
+            <option>初二(1)班</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>学科</label>
+          <select class="form-select">
+            <option>数学</option><option>物理</option><option>英语</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>作业标题</label>
+        <input type="text" class="form-input" placeholder="如：第二章课后习题">
+      </div>
+      <div class="form-group">
+        <label>作业内容 / AI生成题目要求</label>
+        <textarea class="form-textarea" placeholder="描述作业要求，AI将自动生成题目..."></textarea>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>截止日期</label>
+          <input type="date" class="form-input" value="2026-07-28">
+        </div>
+        <div class="form-group">
+          <label>题量</label>
+          <input type="number" class="form-input" value="10" min="1" max="50">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">AI生成作业并发布</button>
+    </form>
+  </div>
+</div>
+
+<!-- 最近作业 -->
+<div class="card" style="margin-top:20px;">
+  <div class="card-header">最近作业</div>
+  <div class="card-body">
+    <table>
+      <thead><tr><th>标题</th><th>班级</th><th>提交率</th><th>平均分</th><th>截止日期</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>一元二次方程练习</td>
+          <td>初一(3)班</td>
+          <td><div class="progress-bar" style="min-width:80px;"><div class="progress-fill progress-green" style="width:95%"></div></div> 95%</td>
+          <td>84</td>
+          <td style="font-size:12px;">2026-07-26</td>
+        </tr>
+        <tr>
+          <td>力学基础练习</td>
+          <td>初二(1)班</td>
+          <td><div class="progress-bar" style="min-width:80px;"><div class="progress-fill progress-blue" style="width:88%"></div></div> 88%</td>
+          <td>79</td>
+          <td style="font-size:12px;">2026-07-25</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('homework-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  alert('AI正在生成作业题目...\n\n预计1分钟内完成，生成后会自动布置到选定班级。');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+广电算力TV APK v1.0.0
+=========================
+此文件为占位符。真实部署时替换为 Android TV APK。
+
+当前可用模拟方式：macOS 桌面模拟器
+启动命令：cd ~/Echo-Loop/guangdian-tv && ~/miniconda3/bin/python3 main.py
+访问地址：http://127.0.0.1:5151
+
+功能：
+- 天气/日期/时钟显示
+- 本机算力资源监控（CPU/GPU/RAM）
+- 已安装本地模型检测
+- 广电商城 Skill 浏览
+- 本地/分布式算力调度仪表盘
+- Token 消耗与计费汇总
+- deependu.school 教育入口
+- AI 对话入口

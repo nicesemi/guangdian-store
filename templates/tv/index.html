@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>广电算力TV · 下载</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 50%, #0f172a 100%);
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+    .container {
+      max-width: 720px;
+      text-align: center;
+    }
+    .logo { font-size: 48px; margin-bottom: 8px; }
+    .title { font-size: 36px; font-weight: 700; color: #1a56db; margin-bottom: 8px; }
+    .subtitle { font-size: 16px; color: #6b7280; margin-bottom: 40px; }
+    .tv-mockup {
+      width: 480px; height: 280px;
+      background: linear-gradient(135deg, #1e1b4b, #312e81);
+      border-radius: 20px;
+      margin: 0 auto 32px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border: 3px solid rgba(26,86,219,.3);
+      box-shadow: 0 20px 60px rgba(26,86,219,.15);
+    }
+    .tv-mockup .screen-icon { font-size: 80px; margin-bottom: 12px; }
+    .tv-mockup .screen-text { font-size: 18px; color: #93c5fd; }
+    .download-section {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+    }
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #1a56db, #2563eb);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      padding: 14px 40px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all .3s;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-download:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(26,86,219,.4); }
+    .version { font-size: 13px; color: #6b7280; margin-top: 12px; }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .feature-item {
+      background: rgba(255,255,255,.03);
+      border-radius: 12px;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,.05);
+    }
+    .feature-icon { font-size: 28px; margin-bottom: 8px; }
+    .feature-label { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .feature-desc { font-size: 11px; color: #6b7280; }
+    .info-note {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #4b5563;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">📡</div>
+    <div class="title">广电算力TV</div>
+    <div class="subtitle">长沙广电算力试点 · 家庭电视端应用</div>
+
+    <div class="tv-mockup">
+      <div class="screen-icon">📺</div>
+      <div class="screen-text">广电算力TV v1.0</div>
+    </div>
+
+    <div class="download-section">
+      <button class="btn-download" onclick="downloadApk()">
+        ⬇ 下载 APK 安装包
+      </button>
+      <div class="version">版本 v1.0.0 · 适用于 Android TV & 鸿蒙 · 32MB</div>
+    </div>
+
+    <div class="features">
+      <div class="feature-item">
+        <div class="feature-icon">🌤️</div>
+        <div class="feature-label">天气与日期</div>
+        <div class="feature-desc">实时天气、时钟、空气质量</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-label">本地算力管理</div>
+        <div class="feature-desc">连接一体机，查看本机算力状态</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🛒</div>
+        <div class="feature-label">广电商城</div>
+        <div class="feature-desc">浏览购买Skill，本地/分布式算力调度</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-label">AI对话</div>
+        <div class="feature-desc">语音/文字智能助手</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">📊</div>
+        <div class="feature-label">算力仪表盘</div>
+        <div class="feature-desc">本地/分布式算力占比，Token消耗统计</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🎓</div>
+        <div class="feature-label">deependu.school</div>
+        <div class="feature-desc">AI家教、课程学习、题库练习</div>
+      </div>
+    </div>
+
+    <div class="info-note">
+      本应用需要连接长沙广电算力试点网络中的 50TOPS 一体机。<br>
+      7B 以下模型可直接本地运行（零 Token 费用），大模型自动路由至分布式集群（按 CPT 计费）。<br>
+      支持 Android TV 5.0+ 及鸿蒙电视系统。
+    </div>
+  </div>
+
+  <script>
+    function downloadApk() {
+      window.location.href = '/static/apk/guangdian-tv-v1.0.0.apk';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}监控大屏 - 管理后台{% endblock %}
+{% block page_title %}分布式一体机监控大屏{% endblock %}
+
+{% block content %}
+<!-- 统计卡片 -->
+<div class="stats-grid">
+  <div class="stat-card primary">
+    <div class="stat-label">节点总数</div>
+    <div class="stat-value">{{ node_stats.total }}</div>
+    <div class="stat-sub">分布式一体机</div>
+  </div>
+  <div class="stat-card success">
+    <div class="stat-label">在线节点</div>
+    <div class="stat-value" id="stat-online-nodes">{{ node_stats.online }}</div>
+    <div class="stat-sub">正常运行</div>
+  </div>
+  <div class="stat-card danger">
+    <div class="stat-label">离线/维护</div>
+    <div class="stat-value">{{ node_stats.offline + node_stats.maintenance }}</div>
+    <div class="stat-sub">需要关注</div>
+  </div>
+  <div class="stat-card warning">
+    <div class="stat-label">告警节点</div>
+    <div class="stat-value">{{ node_stats.alerts }}</div>
+    <div class="stat-sub">负载>80%或离线</div>
+  </div>
+</div>
+
+<!-- 节点列表 -->
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-header">节点实时状态</div>
+  <div class="card-body">
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>节点名称</th><th>位置</th><th>算力(TOPS)</th><th>负载率</th><th>温度</th><th>状态</th><th>在线时长</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for node in nodes %}
+          <tr>
+            <td>#{{ node.id }}</td>
+            <td><strong>{{ node.name }}</strong></td>
+            <td>{{ node.location }}</td>
+            <td>{{ "%.0f"|format(node.tops_capacity) }}</td>
+            <td>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div class="progress-bar" style="flex:1; min-width:60px;">
+                  <div class="progress-fill {% if node.load > 80 %}progress-red{% elif node.load > 60 %}progress-yellow{% else %}progress-blue{% endif %}" 
+                       style="width:{{ node.load }}%"></div>
+                </div>
+                <span style="font-size:12px; min-width:40px;">{{ "%.1f"|format(node.load) }}%</span>
+              </div>
+            </td>
+            <td>{{ "%.1f"|format(node.temperature) }}°C</td>
+            <td>
+              {% if node.status == 'online' %}
+              <span class="badge badge-success">在线</span>
+              {% elif node.status == 'offline' %}
+              <span class="badge badge-danger">离线</span>
+              {% elif node.status == 'maintenance' %}
+              <span class="badge badge-warning">维护中</span>
+              {% endif %}
+            </td>
+            <td style="font-size:12px;">{{ (node.uptime // 3600) }}h</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TOPS利用率图表 + 最近告警 -->
+<div class="grid-2">
+  <div class="chart-area">
+    <h4>节点TOPS利用率 (模拟)</h4>
+    <div class="bar-chart">
+      {% for node in nodes[:8] %}
+      <div class="bar-col">
+        <div class="bar-fill progress-blue" data-height="{{ node.load }}" style="height:0%;"></div>
+        <div class="bar-label">{{ node.name[:4] }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">最近告警</div>
+    <div class="card-body">
+      {% if alerts %}
+      <table>
+        <thead><tr><th>节点</th><th>位置</th><th>负载</th><th>状态</th></tr></thead>
+        <tbody>
+          {% for a in alerts %}
+          <tr>
+            <td>{{ a.name }}</td>
+            <td>{{ a.location }}</td>
+            <td><span class="badge badge-danger">{{ "%.1f"|format(a.load) }}%</span></td>
+            <td>
+              {% if a.status == 'offline' %}<span class="badge badge-danger">离线</span>
+              {% else %}<span class="badge badge-warning">高负载</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state"><div class="empty-icon">✅</div><p>所有节点运行正常</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}

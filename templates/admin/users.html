@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}用户管理 - 管理后台{% endblock %}
+{% block page_title %}用户管理{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <span>用户列表</span>
+    <button class="btn btn-primary btn-sm">+ 添加用户</button>
+  </div>
+  <div class="card-body">
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>ID</th><th>用户名</th><th>广电账号</th><th>角色</th><th>余额</th><th>注册时间</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>#{{ u.id }}</td>
+            <td><strong>{{ u.username }}</strong></td>
+            <td>{{ u.tv_account or '-' }}</td>
+            <td>
+              {% if u.role == 'admin' %}<span class="badge badge-info">管理员</span>
+              {% elif u.role == 'developer' %}<span class="badge badge-warning">开发者</span>
+              {% else %}<span class="badge badge-gray">用户</span>
+              {% endif %}
+            </td>
+            <td>¥{{ "%.2f"|format(u.balance) }}</td>
+            <td style="font-size:12px;">{{ u.created_at }}</td>
+            <td>
+              <button class="btn btn-outline btn-sm">编辑</button>
+              <button class="btn btn-outline btn-sm">禁用</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="stats-grid" style="margin-top:20px;">
+  <div class="stat-card">
+    <div class="stat-label">注册用户总数</div>
+    <div class="stat-value">{{ users|length }}</div>
+  </div>
+  <div class="stat-card primary">
+    <div class="stat-label">管理员</div>
+    <div class="stat-value">{{ users|selectattr('role', 'equalto', 'admin')|list|length }}</div>
+  </div>
+  <div class="stat-card warning">
+    <div class="stat-label">开发者</div>
+    <div class="stat-value">{{ users|selectattr('role', 'equalto', 'developer')|list|length }}</div>
+  </div>
+  <div class="stat-card success">
+    <div class="stat-label">普通用户</div>
+    <div class="stat-value">{{ users|selectattr('role', 'equalto', 'user')|list|length }}</div>
+  </div>
+</div>
+{% endblock %}

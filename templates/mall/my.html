@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}我的Skill - 广电商城{% endblock %}
+{% block page_title %}我的Skill{% endblock %}
+
+{% block content %}
+{% if skills %}
+<div class="skill-grid">
+  {% for skill in skills %}
+  <div class="skill-card">
+    <div class="skill-name">{{ skill.name }}</div>
+    <div style="font-size:12px; margin-bottom:8px;">
+      <span class="badge badge-info">{{ skill.category }}</span>
+      <span style="color:var(--warning); margin-left:8px;">⭐ {{ skill.rating }}</span>
+    </div>
+    <div class="skill-desc">{{ skill.description }}</div>
+    <div style="font-size:12px; color:var(--gray-500); margin-bottom:8px;">
+      安装时间：{{ skill.installed_at }}
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-primary btn-sm">使用</button>
+      <button class="btn btn-outline btn-sm btn-uninstall" data-skill-id="{{ skill.id }}">卸载</button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  <div class="card-body">
+    <div class="empty-state">
+      <div class="empty-icon">📦</div>
+      <p>还没有安装任何Skill</p>
+      <a href="/mall" class="btn btn-primary" style="margin-top:12px;">去商城逛逛</a>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/mall.js"></script>
+{% endblock %}

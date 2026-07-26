@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}deependu.school - 广电算力教育平台{% endblock %}
+{% block page_title %}deependu.school · AI驱动教育{% endblock %}
+
+{% block content %}
+<!-- 计费规则横幅 -->
+<div class="info-banner" style="margin-bottom:20px;background:linear-gradient(135deg,#1e2946,#1a1c38);border:1px solid rgba(59,130,246,.15);">
+  <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+    <span style="font-weight:700;color:var(--primary);white-space:nowrap;">计费规则</span>
+    <div style="font-size:13px;line-height:1.8;color:#cbd5e1;">
+      <span style="color:#10b981;">本地算力</span> 7B以下模型 · 50TOPS一体机直跑 · <strong>零Token费用</strong> &nbsp;|&nbsp;
+      <span style="color:#f59e0b;">分布式算力</span> 大模型自动路由集群 · <strong>0.05 CPT/次</strong> &nbsp;|&nbsp;
+      汇率：<strong>1 CPT = ¥0.01</strong>
+    </div>
+  </div>
+</div>
+<div class="stats-grid">
+  <div class="stat-card primary">
+    <div class="stat-label">课程总数</div>
+    <div class="stat-value">3</div>
+  </div>
+  <div class="stat-card success">
+    <div class="stat-label">题库数量</div>
+    <div class="stat-value">6</div>
+  </div>
+  <div class="stat-card warning">
+    <div class="stat-label">AI家教在线</div>
+    <div class="stat-value">24/7</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">覆盖学段</div>
+    <div class="stat-value">K12+</div>
+  </div>
+</div>
+
+<!-- 学科分类 -->
+<div class="quick-entries">
+  <a href="/edu/tutor" class="quick-entry">
+    <div class="entry-icon">📐</div><div class="entry-title">数学</div><div class="entry-desc">AI一对一辅导</div>
+  </a>
+  <a href="/edu/tutor" class="quick-entry">
+    <div class="entry-icon">⚛️</div><div class="entry-title">物理</div><div class="entry-desc">虚拟实验探究</div>
+  </a>
+  <a href="/edu/tutor" class="quick-entry">
+    <div class="entry-icon">🇬🇧</div><div class="entry-title">英语</div><div class="entry-desc">口语陪练</div>
+  </a>
+  <a href="/edu/tutor" class="quick-entry">
+    <div class="entry-icon">💻</div><div class="entry-title">编程</div><div class="entry-desc">Python入门到精通</div>
+  </a>
+</div>
+
+<div class="grid-2">
+  <!-- 推荐课程 -->
+  <div class="card">
+    <div class="card-header">推荐课程</div>
+    <div class="card-body">
+      {% for course in courses %}
+      <div style="padding:12px; border-bottom:1px solid var(--gray-100); display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong>{{ course.title }}</strong>
+          <div style="font-size:12px; color:var(--gray-500);">
+            <span class="badge badge-info">{{ course.subject }}</span>
+            <span style="margin-left:8px;">{{ course.grade }}</span>
+          </div>
+        </div>
+        <a href="/edu/courses" class="btn btn-outline btn-sm">开始学习</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- 最近学习 -->
+  <div class="card">
+    <div class="card-header">最近学习</div>
+    <div class="card-body">
+      <div style="padding:12px; border-bottom:1px solid var(--gray-100);">
+        <strong>小学数学思维训练</strong>
+        <div style="font-size:12px; color:var(--gray-500);">上次学习：2026-07-24 · 完成度 60%</div>
+        <div class="progress-bar" style="margin-top:8px;">
+          <div class="progress-fill progress-blue" style="width:60%;"></div>
+        </div>
+      </div>
+      <div style="padding:12px;">
+        <strong>Python编程入门</strong>
+        <div style="font-size:12px; color:var(--gray-500);">上次学习：2026-07-23 · 完成度 30%</div>
+        <div class="progress-bar" style="margin-top:8px;">
+          <div class="progress-fill progress-blue" style="width:30%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 快捷功能区 -->
+<div class="quick-entries" style="margin-top:24px;">
+  <a href="/edu/tutor" class="quick-entry">
+    <div class="entry-icon">🤖</div><div class="entry-title">AI家教</div><div class="entry-desc">即时答疑辅导</div>
+  </a>
+  <a href="/edu/courses" class="quick-entry">
+    <div class="entry-icon">📚</div><div class="entry-title">课程广场</div><div class="entry-desc">全部课程浏览</div>
+  </a>
+  <a href="/edu/practice" class="quick-entry">
+    <div class="entry-icon">✏️</div><div class="entry-title">题库练习</div><div class="entry-desc">AI出题+批改</div>
+  </a>
+  <a href="/edu/report" class="quick-entry">
+    <div class="entry-icon">📈</div><div class="entry-title">学习报告</div><div class="entry-desc">掌握度分析</div>
+  </a>
+</div>
+{% endblock %}

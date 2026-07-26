@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}题库练习 - deependu.school{% endblock %}
+{% block page_title %}题库练习{% endblock %}
+
+{% block content %}
+<div class="search-bar">
+  <select class="form-select" style="width:auto;" onchange="location.href='/edu/practice?course_id='+this.value">
+    <option value="0">-- 选择课程 --</option>
+    {% for c in courses %}
+    <option value="{{ c.id }}" {% if selected_course == c.id %}selected{% endif %}>{{ c.title }}</option>
+    {% endfor %}
+  </select>
+  <span style="font-size:13px; color:var(--gray-500); align-self:center;">共 {{ exercises|length }} 道题</span>
+</div>
+
+{% if exercises %}
+<div class="grid-2">
+  {% for ex in exercises %}
+  <div class="card">
+    <div class="card-body">
+      <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+        <span class="badge badge-info">第 {{ loop.index }} 题</span>
+        <span style="font-size:12px; color:var(--gray-500);">课程ID: {{ ex.course_id }}</span>
+      </div>
+      <h4 style="font-size:15px; margin-bottom:12px; line-height:1.6;">{{ ex.question }}</h4>
+      <div id="exercise-{{ ex.id }}">
+        {% set options_list = ex.options %}
+        {% if options_list is string %}
+          {% set options_list = ex.options %}
+        {% endif %}
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          {# Parse JSON options string #}
+          {% set opts = ex.options %}
+          {% set opts_clean = opts|replace('"', '')|replace('[', '')|replace(']', '') %}
+          {% set parts = opts_clean.split(', ') %}
+          {% for part in parts %}
+          <label style="display:flex; align-items:center; gap:8px; padding:8px; border:1px solid var(--gray-200); border-radius:8px; cursor:pointer;">
+            <input type="radio" name="q{{ ex.id }}" value="{{ part[0] }}">
+            <span style="font-size:14px;">{{ part }}</span>
+          </label>
+          {% endfor %}
+        </div>
+        <div style="margin-top:8px;">
+          <button class="btn btn-primary btn-sm" onclick="checkAnswer('{{ ex.id }}', '{{ ex.answer }}')">提交</button>
+          <span id="feedback-{{ ex.id }}" style="margin-left:12px; font-size:13px; font-weight:500;"></span>
+        </div>
+        <div id="explanation-{{ ex.id }}" style="margin-top:8px; padding:8px; background:var(--gray-50); border-radius:6px; font-size:12px; color:var(--gray-600); display:none;">
+          <strong>解析：</strong>{{ ex.explanation }}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  <div class="card-body">
+    <div class="empty-state">
+      <div class="empty-icon">✏️</div>
+      <p>请先选择一个课程来查看对应的练习题</p>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function checkAnswer(exId, correctAnswer) {
+  var selected = document.querySelector('input[name="q' + exId + '"]:checked');
+  var feedback = document.getElementById('feedback-' + exId);
+  var explanation = document.getElementById('explanation-' + exId);
+  if (!selected) {
+    feedback.textContent = '请先选择一个选项';
+    feedback.style.color = '#ef4444';
+    return;
+  }
+  if (selected.value === correctAnswer) {
+    feedback.textContent = '✅ 正确！';
+    feedback.style.color = '#10b981';
+  } else {
+    feedback.textContent = '❌ 错误，正确答案是 ' + correctAnswer;
+    feedback.style.color = '#ef4444';
+  }
+  explanation.style.display = 'block';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}开发者中心 - 开放平台{% endblock %}
+{% block page_title %}开发者中心{% endblock %}
+
+{% block content %}
+<!-- 统计卡片 -->
+<div class="stats-grid">
+  <div class="stat-card primary">
+    <div class="stat-label">我的Skill数</div>
+    <div class="stat-value">{{ skill_count }}</div>
+  </div>
+  <div class="stat-card success">
+    <div class="stat-label">总调用量</div>
+    <div class="stat-value">{{ total_installs }}</div>
+    <div class="stat-sub">累计安装</div>
+  </div>
+  <div class="stat-card warning">
+    <div class="stat-label">总收益</div>
+    <div class="stat-value">¥{{ "%.2f"|format(total_revenue) }}</div>
+    <div class="stat-sub">分成比例 85%</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">平均评分</div>
+    <div class="stat-value">{{ avg_rating }}</div>
+    <div class="stat-sub">满分 5.0</div>
+  </div>
+</div>
+
+<!-- 快捷链接 -->
+<div class="quick-entries" style="margin-bottom:24px;">
+  <a href="/developer/submit" class="quick-entry">
+    <div class="entry-icon">🚀</div>
+    <div class="entry-title">提交新Skill</div>
+    <div class="entry-desc">上传你的创意</div>
+  </a>
+  <a href="/developer/sdk" class="quick-entry">
+    <div class="entry-icon">📋</div>
+    <div class="entry-title">SDK文档</div>
+    <div class="entry-desc">接口规范与示例</div>
+  </a>
+  <a href="/developer/console" class="quick-entry">
+    <div class="entry-icon">🔧</div>
+    <div class="entry-title">API控制台</div>
+    <div class="entry-desc">在线调试接口</div>
+  </a>
+  <div class="quick-entry">
+    <div class="entry-icon">📊</div>
+    <div class="entry-title">数据看板</div>
+    <div class="entry-desc">调用量·收益·评价</div>
+  </div>
+</div>
+
+<!-- 我的Skill -->
+<div class="card">
+  <div class="card-header">我的Skill</div>
+  <div class="card-body">
+    {% if my_skills %}
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>ID</th><th>名称</th><th>分类</th><th>价格</th><th>评分</th><th>安装量</th><th>状态</th></tr></thead>
+        <tbody>
+          {% for skill in my_skills %}
+          <tr>
+            <td>#{{ skill.id }}</td>
+            <td><strong>{{ skill.name }}</strong></td>
+            <td><span class="badge badge-info">{{ skill.category }}</span></td>
+            <td>{% if skill.price == 0 %}<span style="color:var(--success);">免费</span>{% else %}¥{{ "%.2f"|format(skill.price) }}{% endif %}</td>
+            <td>⭐ {{ skill.rating }}</td>
+            <td>{{ skill.installs }}</td>
+            <td>
+              {% if skill.status == 'active' %}<span class="badge badge-success">已上架</span>
+              {% elif skill.status == 'pending' %}<span class="badge badge-warning">审核中</span>
+              {% else %}<span class="badge badge-gray">{{ skill.status }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📦</div>
+      <p>还没有发布过Skill</p>
+      <a href="/developer/submit" class="btn btn-primary" style="margin-top:12px;">提交第一个Skill</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 收益分成说明 -->
+<div class="card" style="margin-top:20px;">
+  <div class="card-header">收益分成规则</div>
+  <div class="card-body">
+    <div style="display:flex; gap:16px; text-align:center;">
+      <div style="flex:1; padding:16px; background:var(--primary-bg); border-radius:8px;">
+        <div style="font-size:24px; font-weight:700; color:var(--primary);">85%</div>
+        <div style="font-size:12px; color:var(--gray-600);">开发者分成</div>
+      </div>
+      <div style="flex:1; padding:16px; background:var(--gray-100); border-radius:8px;">
+        <div style="font-size:24px; font-weight:700; color:var(--gray-600);">15%</div>
+        <div style="font-size:12px; color:var(--gray-600);">平台服务费</div>
+      </div>
+    </div>
+    <p style="margin-top:12px; font-size:13px; color:var(--gray-500);">收益每月结算，满100元自动提现到广电账户</p>
+  </div>
+</div>
+{% endblock %}

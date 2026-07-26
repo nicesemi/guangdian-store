@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}计费管理 - 管理后台{% endblock %}
+{% block page_title %}计费管理{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+  <div class="stat-card success">
+    <div class="stat-label">今日收入</div>
+    <div class="stat-value">¥328.50</div>
+  </div>
+  <div class="stat-card primary">
+    <div class="stat-label">本月收入</div>
+    <div class="stat-value">¥8,920.00</div>
+  </div>
+  <div class="stat-card warning">
+    <div class="stat-label">平台抽成(15%)</div>
+    <div class="stat-value">¥1,338.00</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">总交易额</div>
+    <div class="stat-value">¥{{ "%.2f"|format(total_orders) }}</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- 用户账单 -->
+  <div class="card">
+    <div class="card-header">用户账单</div>
+    <div class="card-body">
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>ID</th><th>用户</th><th>金额</th><th>类型</th><th>时间</th></tr></thead>
+          <tbody>
+            {% for bill in bills %}
+            <tr>
+              <td>#{{ bill.id }}</td>
+              <td>{{ bill.user_id }}</td>
+              <td style="color:{% if bill.amount < 0 %}var(--danger){% else %}var(--success){% endif %};">
+                {% if bill.amount >= 0 %}+{% endif %}¥{{ "%.2f"|format(bill.amount) }}
+              </td>
+              <td><span class="badge {% if bill.type=='充值' %}badge-success{% elif bill.type=='收益' %}badge-info{% else %}badge-gray{% endif %}">{{ bill.type }}</span></td>
+              <td style="font-size:12px;">{{ bill.created_at }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 节点收益 -->
+  <div class="card">
+    <div class="card-header">节点收益预估</div>
+    <div class="card-body">
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>节点</th><th>位置</th><th>算力(TOPS)</th><th>月收益预估</th></tr></thead>
+          <tbody>
+            {% for node in nodes[:8] %}
+            <tr>
+              <td>{{ node.name }}</td>
+              <td>{{ node.location }}</td>
+              <td>{{ "%.0f"|format(node.tops_capacity) }}</td>
+              <td>¥{{ "%.2f"|format(node.tops_capacity * 0.15) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 订单记录 -->
+<div class="card" style="margin-top:20px;">
+  <div class="card-header">订单记录</div>
+  <div class="card-body">
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>ID</th><th>用户</th><th>Skill</th><th>金额</th><th>支付方式</th><th>状态</th><th>时间</th></tr></thead>
+        <tbody>
+          {% for order in orders %}
+          <tr>
+            <td>#{{ order.id }}</td>
+            <td>{{ order.user_id }}</td>
+            <td>{{ order.skill_id }}</td>
+            <td>¥{{ "%.2f"|format(order.amount) }}</td>
+            <td>{% if order.payment_method == 'balance' %}余额{% elif order.payment_method == 'wechat' %}微信{% else %}{{ order.payment_method }}{% endif %}</td>
+            <td>
+              {% if order.status == 'completed' %}<span class="badge badge-success">已完成</span>
+              {% else %}<span class="badge badge-gray">{{ order.status }}</span>
+              {% endif %}
+            </td>
+            <td style="font-size:12px;">{{ order.created_at }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
