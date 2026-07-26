@@ -26,16 +26,30 @@ jobs:
 
       - name: Install SDK Platform & Build Tools
         run: |
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           yes | sdkmanager --licenses 2>/dev/null || true
           sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
+      - name: Debug environment
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          echo "JAVA_HOME=$JAVA_HOME"
+          which java
+          ls -la android-tv/gradlew
+          ls -la android-tv-manimcat/gradlew
+
       - name: Build Deepedu TV APK
         working-directory: android-tv
-        run: ./gradlew assembleRelease --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
 
       - name: Build ManimCat TV APK
         working-directory: android-tv-manimcat
-        run: ./gradlew assembleRelease --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
 
       - name: Copy APKs to static
         run: |
