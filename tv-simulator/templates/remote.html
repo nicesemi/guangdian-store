@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>广电TV遥控器</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    background: #0b0e1a;
+    color: #e2e8f0;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+  }
+
+  .status-bar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #64748b;
+    flex-shrink: 0;
+  }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .status-online { background: #10b981; box-shadow: 0 0 6px #10b981; }
+  .status-offline { background: #ef4444; }
+
+  .voice-section {
+    flex-shrink: 0;
+    margin: 12px 0;
+    width: 100%;
+    position: relative;
+  }
+  .voice-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 14px;
+    border: 2px solid rgba(59,130,246,.3);
+    background: rgba(59,130,246,.08);
+    color: #93c5fd;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .voice-btn:active, .voice-btn.listening {
+    border-color: #ef4444;
+    background: rgba(239,68,68,.12);
+    color: #fca5a5;
+    animation: pulse 1.2s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .6; } }
+  .voice-text {
+    text-align: center;
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 6px;
+    min-height: 20px;
+  }
+
+  .text-input-section {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    flex-shrink: 0;
+    margin-bottom: 8px;
+  }
+  .text-input {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(30,34,71,.6);
+    color: #e2e8f0;
+    font-size: 14px;
+    outline: none;
+  }
+  .text-input:focus {
+    border-color: rgba(59,130,246,.5);
+  }
+  .text-send-btn {
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(59,130,246,.3);
+    background: rgba(59,130,246,.12);
+    color: #93c5fd;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .dpad-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 320px;
+  }
+  .dpad-row {
+    display: flex;
+    gap: 12px;
+    margin: 4px 0;
+  }
+  .dpad-btn {
+    width: 78px;
+    height: 78px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,.1);
+    background: rgba(30,34,71,.8);
+    color: #e2e8f0;
+    font-size: 26px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dpad-btn:active {
+    background: var(--primary);
+    border-color: var(--primary);
+    box-shadow: 0 0 18px rgba(59,130,246,.4);
+    transform: scale(.93);
+  }
+  .dpad-ok {
+    background: rgba(59,130,246,.15);
+    border-color: rgba(59,130,246,.3);
+    color: #93c5fd;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .dpad-empty { width: 78px; height: 78px; }
+
+  .action-bar {
+    flex-shrink: 0;
+    display: flex;
+    gap: 14px;
+    width: 100%;
+    max-width: 320px;
+    justify-content: center;
+    padding-bottom: 16px;
+  }
+  .action-btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.1);
+    background: rgba(30,34,71,.8);
+    color: #e2e8f0;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: all .15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .action-btn:active {
+    background: rgba(59,130,246,.2);
+    border-color: rgba(59,130,246,.4);
+  }
+  .action-btn.home { border-color: rgba(16,185,129,.3); background: rgba(16,185,129,.08); color: #6ee7b7; }
+  .action-btn.back { border-color: rgba(245,158,11,.3); background: rgba(245,158,11,.08); color: #fcd34d; }
+
+  .feedback {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(59,130,246,.9);
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 20px;
+    font-size: 15px;
+    font-weight: 600;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .2s;
+    z-index: 100;
+  }
+  .feedback.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="status-bar">
+  <span>📡 广电TV遥控器</span>
+  <span class="status-dot status-online" id="statusDot"></span>
+</div>
+
+<div class="voice-section">
+  <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">
+    🎤 按住说话
+  </button>
+  <div class="voice-text" id="voiceText">点击按钮或长按开始语音控制</div>
+</div>
+
+<div class="text-input-section">
+  <input type="text" class="text-input" id="textInput" 
+    placeholder="输入文字发送到电视..." 
+    onkeydown="if(event.key==='Enter')sendText()">
+  <button class="text-send-btn" onclick="sendText()">发送</button>
+</div>
+
+<div class="dpad-container">
+  <div class="dpad-row">
+    <div class="dpad-empty"></div>
+    <button class="dpad-btn" id="btn-up" onpointerdown="sendCmd('up')">▲</button>
+    <div class="dpad-empty"></div>
+  </div>
+  <div class="dpad-row">
+    <button class="dpad-btn" id="btn-left" onpointerdown="sendCmd('left')">◀</button>
+    <button class="dpad-btn dpad-ok" id="btn-ok" onpointerdown="sendCmd('ok')">OK</button>
+    <button class="dpad-btn" id="btn-right" onpointerdown="sendCmd('right')">▶</button>
+  </div>
+  <div class="dpad-row">
+    <div class="dpad-empty"></div>
+    <button class="dpad-btn" id="btn-down" onpointerdown="sendCmd('down')">▼</button>
+    <div class="dpad-empty"></div>
+  </div>
+</div>
+
+<div class="action-bar">
+  <button class="action-btn home" onpointerdown="sendCmd('home')">🏠 首页</button>
+  <button class="action-btn back" onpointerdown="sendCmd('back')">🔙 返回</button>
+</div>
+
+<div class="feedback" id="feedback"></div>
+
+<script>
+const TV_URL = window.location.origin;
+let listening = false;
+let recognition = null;
+
+function showFeedback(text) {
+  const fb = document.getElementById('feedback');
+  fb.textContent = text;
+  fb.classList.add('show');
+  setTimeout(() => fb.classList.remove('show'), 600);
+}
+
+function sendCmd(command) {
+  fetch(TV_URL + '/api/tv/remote-command', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({command: command})
+  }).then(r=>r.json()).then(d=>{
+    if (d.success) showFeedback(d.command || '已发送');
+  }).catch(()=>{
+    document.getElementById('statusDot').className = 'status-dot status-offline';
+    showFeedback('连接失败');
+  });
+}
+
+function sendText() {
+  const inp = document.getElementById('textInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  sendCmd('text:' + text);
+  inp.value = '';
+  showFeedback('已发送: ' + text);
+}
+
+function toggleVoice() {
+  if (listening) {
+    stopVoice();
+  } else {
+    startVoice();
+  }
+}
+
+function startVoice() {
+  if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+    alert('浏览器不支持语音识别，请使用 Chrome 或 Safari');
+    return;
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'zh-CN';
+  recognition.interimResults = false;
+  recognition.continuous = false;
+
+  recognition.onstart = () => {
+    listening = true;
+    const btn = document.getElementById('voiceBtn');
+    btn.classList.add('listening');
+    btn.textContent = '🎤 正在听...';
+    document.getElementById('voiceText').textContent = '请说出指令...';
+  };
+
+  recognition.onresult = (event) => {
+    const text = event.results[0][0].transcript.trim();
+    document.getElementById('voiceText').textContent = '识别: ' + text;
+    processVoiceCommand(text);
+  };
+
+  recognition.onerror = (event) => {
+    document.getElementById('voiceText').textContent = '识别失败: ' + event.error;
+    stopVoice();
+  };
+
+  recognition.onend = () => stopVoice();
+  recognition.start();
+}
+
+function stopVoice() {
+  listening = false;
+  if (recognition) {
+    try { recognition.stop(); } catch(e) {}
+  }
+  const btn = document.getElementById('voiceBtn');
+  btn.classList.remove('listening');
+  btn.textContent = '🎤 按住说话';
+}
+
+async function processVoiceCommand(text) {
+  document.getElementById('voiceText').textContent = '识别: ' + text;
+
+  try {
+    const resp = await fetch(TV_URL + '/api/voice/intent', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({text: text})
+    });
+    if (!resp.ok) throw new Error('API error');
+    const intent = await resp.json();
+
+    switch (intent.action) {
+      case 'navigate':
+        sendCmd(intent.direction);
+        break;
+      case 'open_app':
+        sendCmd('open:' + intent.app);
+        break;
+      case 'open_modal':
+        sendCmd('modal:' + intent.modal);
+        break;
+      case 'uninstall':
+        sendCmd('uninstall:' + intent.app);
+        break;
+      case 'unknown':
+        showFeedback(intent.message || '未识别');
+        break;
+      default:
+        showFeedback('未知意图');
+    }
+  } catch (e) {
+    console.warn('LLM意图识别失败，发送原始文本', e);
+    sendCmd('voice:' + text);
+  }
+}
+
+// Long press for voice
+let pressTimer;
+const voiceBtn = document.getElementById('voiceBtn');
+voiceBtn.addEventListener('pointerdown', () => {
+  pressTimer = setTimeout(() => startVoice(), 400);
+});
+voiceBtn.addEventListener('pointerup', () => {
+  clearTimeout(pressTimer);
+});
+voiceBtn.addEventListener('pointerleave', () => {
+  clearTimeout(pressTimer);
+});
+
+// Check TV connection
+function checkConnection() {
+  fetch(TV_URL + '/api/time').then(r=>r.json()).then(d=>{
+    document.getElementById('statusDot').className = 'status-dot status-online';
+  }).catch(()=>{
+    document.getElementById('statusDot').className = 'status-dot status-offline';
+  });
+}
+setInterval(checkConnection, 5000);
+checkConnection();
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+[
+  {
+    "id": 16,
+    "name": "deepedu.school",
+    "category": "教育",
+    "developer_id": 1,
+    "model_id": 1,
+    "description": "AI智能教育平台，一站式学习伴侣：AI家教、课程广场、题库练习、学习报告。真实部署在Vercel云端。",
+    "price": 0.0,
+    "local_deploy": 0,
+    "tops_required": 70.0,
+    "token_cost_per_call": 0.05,
+    "rating": 4.9,
+    "installs": 1,
+    "status": "active",
+    "skill_url": "http://localhost:8090",
+    "model_name": "Llama-3-70B",
+    "model_tops": 70.0,
+    "calls_today": 34
+  },
+  {
+    "id": 17,
+    "name": "DeepCat",
+    "category": "创意",
+    "developer_id": 1,
+    "model_id": 3,
+    "description": "本地部署AI动画生成工具，基于Stable Diffusion，支持文本转动画、风格迁移。已优化适配50TOPS一体机。",
+    "price": 0.0,
+    "local_deploy": 1,
+    "tops_required": 40.0,
+    "token_cost_per_call": 0.0,
+    "rating": 4.8,
+    "installs": 1,
+    "status": "active",
+    "skill_url": "http://localhost:3000",
+    "model_name": "Stable-Diffusion-XL",
+    "model_tops": 40.0,
+    "calls_today": 14
+  }
+]
