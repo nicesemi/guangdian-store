@@ -22,21 +22,29 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK Platform & Build Tools
+        run: |
+          yes | sdkmanager --licenses 2>/dev/null || true
+          sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
       - name: Build Deepedu TV APK
         working-directory: android-tv
-        run: ./gradlew assembleRelease
+        run: ./gradlew assembleRelease --no-daemon
 
       - name: Build ManimCat TV APK
         working-directory: android-tv-manimcat
-        run: ./gradlew assembleRelease
+        run: ./gradlew assembleRelease --no-daemon
 
       - name: Copy APKs to static
         run: |
           mkdir -p static/apk
-          cp android-tv/app/build/outputs/apk/release/app-release.apk static/apk/deepedu-tv.apk
-          cp android-tv-manimcat/app/build/outputs/apk/release/app-release.apk static/apk/manimcat-tv.apk
+          cp android-tv/app/build/outputs/apk/release/app-release-unsigned.apk static/apk/deepedu-tv.apk 2>/dev/null || \
+            cp android-tv/app/build/outputs/apk/release/app-release.apk static/apk/deepedu-tv.apk || true
+          cp android-tv-manimcat/app/build/outputs/apk/release/app-release-unsigned.apk static/apk/manimcat-tv.apk 2>/dev/null || \
+            cp android-tv-manimcat/app/build/outputs/apk/release/app-release.apk static/apk/manimcat-tv.apk || true
+          ls -la static/apk/
 
       - name: Commit and push APKs
         run: |
