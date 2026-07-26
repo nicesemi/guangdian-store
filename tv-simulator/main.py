@@ -16,7 +16,7 @@ import psutil
 app = flask.Flask(__name__)
 app.secret_key = "guangdian-tv-2026"
 
-PLATFORM_API = "http://127.0.0.1:8080"
+PLATFORM_API = "https://guangdian-store.vercel.app"
 INSTALLED_STORE = os.path.join(os.path.dirname(__file__), "installed_skills.json")
 
 # Remote control command queue

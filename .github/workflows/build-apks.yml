@@ -42,12 +42,18 @@ jobs:
       - name: Build Deepedu TV APK
         working-directory: android-tv
         run: |
+          export ANDROID_HOME=$ANDROID_SDK_ROOT
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          file gradle/wrapper/gradle-wrapper.jar
+          java -cp gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --version
           chmod +x gradlew
           ./gradlew assembleRelease --no-daemon
 
       - name: Build ManimCat TV APK
         working-directory: android-tv-manimcat
         run: |
+          export ANDROID_HOME=$ANDROID_SDK_ROOT
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
           chmod +x gradlew
           ./gradlew assembleRelease --no-daemon
 
