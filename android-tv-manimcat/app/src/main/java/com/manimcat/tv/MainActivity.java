@@ -214,7 +214,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private class VoiceListener extends android.speech.RecognitionListener {
+    private class VoiceListener implements android.speech.RecognitionListener {
         @Override public void onReadyForSpeech(Bundle params) {}
         @Override public void onBeginningOfSpeech() {}
         @Override public void onRmsChanged(float rmsdB) {}
