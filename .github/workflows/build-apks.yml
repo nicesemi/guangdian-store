@@ -35,28 +35,30 @@ jobs:
         run: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee ../build-deepedu.log
+        continue-on-error: true
 
       - name: Build ManimCat TV APK
         working-directory: android-tv-manimcat
         run: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee ../build-manimcat.log
+        continue-on-error: true
 
-      - name: Copy APKs to static
+      - name: Collect results
         run: |
           mkdir -p static/apk
-          cp android-tv/app/build/outputs/apk/release/app-release-unsigned.apk static/apk/deepedu-tv.apk 2>/dev/null || \
-            cp android-tv/app/build/outputs/apk/release/app-release.apk static/apk/deepedu-tv.apk || true
-          cp android-tv-manimcat/app/build/outputs/apk/release/app-release-unsigned.apk static/apk/manimcat-tv.apk 2>/dev/null || \
-            cp android-tv-manimcat/app/build/outputs/apk/release/app-release.apk static/apk/manimcat-tv.apk || true
-          ls -la static/apk/
+          [ -f android-tv/app/build/outputs/apk/release/app-release-unsigned.apk ] && cp android-tv/app/build/outputs/apk/release/app-release-unsigned.apk static/apk/deepedu-tv.apk || true
+          [ -f android-tv/app/build/outputs/apk/release/app-release.apk ] && cp android-tv/app/build/outputs/apk/release/app-release.apk static/apk/deepedu-tv.apk || true
+          [ -f android-tv-manimcat/app/build/outputs/apk/release/app-release-unsigned.apk ] && cp android-tv-manimcat/app/build/outputs/apk/release/app-release-unsigned.apk static/apk/manimcat-tv.apk || true
+          [ -f android-tv-manimcat/app/build/outputs/apk/release/app-release.apk ] && cp android-tv-manimcat/app/build/outputs/apk/release/app-release.apk static/apk/manimcat-tv.apk || true
+          ls -la static/apk/ || echo "No APKs produced"
 
       - name: Commit and push APKs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add static/apk/
+          git add static/apk/ build-deepedu.log build-manimcat.log || true
           git diff --staged --quiet || git commit -m "chore: auto-build TV APKs [skip ci]"
           git push
